@@ -1,0 +1,211 @@
+---
+import AdminLayout from "../../../../layouts/AdminLayout.astro";
+export const prerender = false;
+
+const { id } = Astro.params;
+if (!id) return Astro.redirect("/admin/animals");
+---
+
+<AdminLayout title="Edit Hewan">
+  <div class="max-w-3xl mx-auto">
+    <div
+      class="bg-white shadow-sm ring-1 ring-slate-900/5 rounded-xl p-6 sm:p-8 relative min-h-[400px]"
+    >
+      <!-- Loading State -->
+      <div
+        id="loading"
+        class="absolute inset-0 flex flex-col items-center justify-center bg-white z-10 rounded-xl"
+      >
+        <div
+          class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-t-sky-600 mb-3"
+        >
+        </div>
+        <p class="text-slate-500 font-medium">Memuat data...</p>
+      </div>
+
+      <form id="animal-form" class="hidden space-y-6">
+        <input type="hidden" id="animal-id" value={id} />
+
+        <!-- Name -->
+        <div>
+          <label
+            for="name"
+            class="block text-sm font-medium text-slate-700 mb-1"
+            >Nama Hewan</label
+          >
+          <input
+            type="text"
+            id="name"
+            required
+            placeholder="Contoh: Sapi Limosin A"
+            class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm px-4 py-3 border"
+          />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <!-- Type -->
+          <div>
+            <label
+              for="type"
+              class="block text-sm font-medium text-slate-700 mb-1">Jenis</label
+            >
+            <div class="relative">
+              <select
+                id="type"
+                required
+                class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm px-4 py-3 border appearance-none"
+              >
+                <option value="Sapi">Sapi</option>
+                <option value="Kambing">Kambing</option>
+                <option value="Domba">Domba</option>
+              </select>
+              <div
+                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500"
+              >
+                <svg
+                  class="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  ><path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"></path></svg
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Price -->
+          <div>
+            <label
+              for="price"
+              class="block text-sm font-medium text-slate-700 mb-1"
+              >Harga (Rp)</label
+            >
+            <div class="relative rounded-md shadow-sm">
+              <div
+                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
+              >
+                <span class="text-slate-500 sm:text-sm">Rp</span>
+              </div>
+              <input
+                type="number"
+                id="price"
+                required
+                placeholder="25000000"
+                class="block w-full rounded-lg border-slate-300 pl-10 focus:border-sky-500 focus:ring-sky-500 sm:text-sm px-4 py-3 border"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <!-- Weight -->
+          <div>
+            <label
+              for="weight"
+              class="block text-sm font-medium text-slate-700 mb-1"
+              >Berat (Kg)</label
+            >
+            <input
+              type="number"
+              id="weight"
+              required
+              placeholder="350"
+              class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm px-4 py-3 border"
+            />
+          </div>
+
+          <!-- Status -->
+          <div>
+            <label
+              for="available"
+              class="block text-sm font-medium text-slate-700 mb-1"
+              >Status</label
+            >
+            <div class="relative">
+              <select
+                id="available"
+                class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm px-4 py-3 border appearance-none"
+              >
+                <option value="true">Tersedia</option>
+                <option value="false">Terjual</option>
+              </select>
+              <div
+                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500"
+              >
+                <svg
+                  class="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  ><path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"></path></svg
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Image URL -->
+        <div>
+          <label
+            for="imageUrl"
+            class="block text-sm font-medium text-slate-700 mb-1"
+            >URL Gambar</label
+          >
+          <input
+            type="url"
+            id="imageUrl"
+            placeholder="https://..."
+            class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm px-4 py-3 border"
+          />
+          <p class="mt-1 text-xs text-slate-500">
+            Masukkan URL direct link gambar (JPG/PNG).
+          </p>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label
+            for="description"
+            class="block text-sm font-medium text-slate-700 mb-1"
+            >Deskripsi</label
+          >
+          <textarea
+            id="description"
+            rows="4"
+            placeholder="Deskripsi kondisi hewan..."
+            class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm px-4 py-3 border"
+          ></textarea>
+        </div>
+
+        <!-- Actions -->
+        <div
+          class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100"
+        >
+          <a
+            href="/admin/animals"
+            class="bg-white py-2.5 px-5 border border-slate-300 rounded-lg shadow-sm text-sm font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-slate-500 transition-colors"
+          >
+            Batal
+          </a>
+          <button
+            type="submit"
+            id="submit-btn"
+            class="inline-flex justify-center py-2.5 px-5 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 transition-colors"
+          >
+            Update Data
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</AdminLayout>
+
+<script src="./_edit.ts"></script>

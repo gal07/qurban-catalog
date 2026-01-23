@@ -1,0 +1,199 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+---
+
+<AdminLayout title="Cara Pemesanan">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4">
+            Manage Cara Pemesanan
+        </h1>
+        <p class="text-gray-600 mb-6">
+            Edit subtitle and manage steps for the "How To Buy" section.
+        </p>
+
+        <form id="how-to-buy-form" class="space-y-6 max-w-2xl">
+            <div>
+                <label
+                    for="subtitle"
+                    class="block text-sm font-medium text-gray-700 mb-1"
+                >
+                    Subtitle
+                </label>
+                <textarea
+                    id="subtitle"
+                    name="subtitle"
+                    rows="2"
+                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                    placeholder="Proses mudah dan transparan untuk kenyamanan ibadah Anda"
+                ></textarea>
+            </div>
+
+            <div>
+                <div class="flex justify-between items-center mb-4">
+                    <label class="block text-sm font-medium text-gray-700"
+                        >Steps</label
+                    >
+                    <button
+                        type="button"
+                        id="add-step-btn"
+                        class="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors"
+                    >
+                        + Add Step
+                    </button>
+                </div>
+                <div id="steps-container" class="space-y-4"></div>
+            </div>
+
+            <div class="pt-4 border-t">
+                <button
+                    type="submit"
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                >
+                    Simpan Perubahan
+                </button>
+            </div>
+        </form>
+    </div>
+</AdminLayout>
+
+<script>
+    import { db } from "../../../lib/firebase";
+    import { doc, getDoc, setDoc } from "firebase/firestore";
+
+    const form = document.getElementById("how-to-buy-form") as HTMLFormElement;
+    const subtitleInput = document.getElementById(
+        "subtitle",
+    ) as HTMLTextAreaElement;
+    const stepsContainer = document.getElementById("steps-container");
+    const addStepBtn = document.getElementById("add-step-btn");
+
+    let steps: Array<{ title: string; description: string }> = [];
+
+    // Load data
+    async function loadData() {
+        try {
+            const docRef = doc(db, "content", "how_to");
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                if (subtitleInput) subtitleInput.value = data.subtitle || "";
+                steps = data.steps || [];
+            }
+
+            renderSteps();
+        } catch (error) {
+            console.error("Error loading data:", error);
+            alert("Gagal memuat data. Silakan coba lagi.");
+        }
+    }
+
+    function renderSteps() {
+        if (!stepsContainer) return;
+        stepsContainer.innerHTML = "";
+
+        steps.forEach((step, index) => {
+            const stepDiv = document.createElement("div");
+            stepDiv.className =
+                "p-4 bg-gray-50 rounded-lg border border-gray-200";
+            stepDiv.innerHTML = `
+                <div class="flex justify-between items-start mb-3">
+                    <span class="text-sm font-semibold text-gray-700">Step ${index + 1}</span>
+                    <button 
+                        type="button" 
+                        data-index="${index}"
+                        class="remove-step-btn text-red-600 hover:text-red-800 text-sm font-medium"
+                    >
+                        Remove
+                    </button>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                        <input 
+                            type="text" 
+                            data-index="${index}" 
+                            data-field="title"
+                            value="${step.title}"
+                            placeholder="e.g., Pilih Hewan"
+                            class="step-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <textarea 
+                            data-index="${index}" 
+                            data-field="description"
+                            rows="2"
+                            placeholder="Describe this step..."
+                            class="step-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        >${step.description}</textarea>
+                    </div>
+                </div>
+            `;
+            stepsContainer.appendChild(stepDiv);
+        });
+
+        // Attach event listeners
+        stepsContainer.querySelectorAll(".step-input").forEach((el) => {
+            el.addEventListener("change", handleStepChange);
+        });
+
+        stepsContainer.querySelectorAll(".remove-step-btn").forEach((btn) => {
+            btn.addEventListener("click", handleRemoveStep);
+        });
+    }
+
+    function handleStepChange(e: Event) {
+        const target = e.target as HTMLInputElement | HTMLTextAreaElement;
+        const index = parseInt(target.dataset.index || "0");
+        const field = target.dataset.field as "title" | "description";
+
+        if (steps[index]) {
+            steps[index][field] = target.value;
+        }
+    }
+
+    function handleRemoveStep(e: Event) {
+        const target = e.target as HTMLButtonElement;
+        const index = parseInt(target.dataset.index || "0");
+        steps.splice(index, 1);
+        renderSteps();
+    }
+
+    addStepBtn?.addEventListener("click", () => {
+        steps.push({ title: "", description: "" });
+        renderSteps();
+    });
+
+    form?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.textContent = "Menyimpan...";
+            (submitBtn as HTMLButtonElement).disabled = true;
+        }
+
+        try {
+            const data = {
+                subtitle: subtitleInput.value,
+                steps: steps,
+                updatedAt: new Date().toISOString(),
+            };
+
+            await setDoc(doc(db, "content", "how_to"), data);
+            alert("Data berhasil disimpan!");
+        } catch (error) {
+            console.error("Error saving data:", error);
+            alert("Gagal menyimpan data: " + (error as Error).message);
+        } finally {
+            if (submitBtn) {
+                submitBtn.textContent = "Simpan Perubahan";
+                (submitBtn as HTMLButtonElement).disabled = false;
+            }
+        }
+    });
+
+    loadData();
+</script>

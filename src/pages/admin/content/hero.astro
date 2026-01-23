@@ -1,0 +1,262 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+---
+
+<AdminLayout title="First Screen">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4">
+            Manage Hero Section
+        </h1>
+        <p class="text-gray-600 mb-6">
+            Edit the first screen (Hero) content displayed on the homepage.
+        </p>
+
+        <form id="hero-form" class="space-y-6 max-w-2xl">
+            <div>
+                <label
+                    for="badge"
+                    class="block text-sm font-medium text-gray-700 mb-1"
+                >
+                    Badge Text
+                </label>
+                <input
+                    type="text"
+                    id="badge"
+                    name="badge"
+                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                    placeholder="Edisi Idul Adha 2026"
+                />
+            </div>
+
+            <div>
+                <label
+                    for="title"
+                    class="block text-sm font-medium text-gray-700 mb-1"
+                >
+                    Title
+                </label>
+                <input
+                    type="text"
+                    id="title"
+                    name="title"
+                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                    placeholder="Qurban Sempurna untuk"
+                />
+            </div>
+
+            <div>
+                <label
+                    for="titleHighlight"
+                    class="block text-sm font-medium text-gray-700 mb-1"
+                >
+                    Title Highlight (Yellow part)
+                </label>
+                <input
+                    type="text"
+                    id="titleHighlight"
+                    name="titleHighlight"
+                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                    placeholder="Ibadah Terbaik"
+                />
+            </div>
+
+            <div>
+                <label
+                    for="description"
+                    class="block text-sm font-medium text-gray-700 mb-1"
+                >
+                    Description
+                </label>
+                <textarea
+                    id="description"
+                    name="description"
+                    rows="3"
+                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                    placeholder="Kami menyediakan hewan qurban..."></textarea>
+            </div>
+
+            <div>
+                <label
+                    for="catalogSubtitle"
+                    class="block text-sm font-medium text-gray-700 mb-1"
+                >
+                    Catalog Subtitle
+                </label>
+                <textarea
+                    id="catalogSubtitle"
+                    name="catalogSubtitle"
+                    rows="2"
+                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                    placeholder="Pilih hewan qurban terbaik Anda. Harga sudah termasuk biaya perawatan dan pengantaran (area terjangkau)."
+                ></textarea>
+                <p class="mt-1 text-sm text-gray-500">
+                    Teks ini akan muncul di bawah judul "Katalog Hewan Qurban".
+                </p>
+            </div>
+
+            <div>
+                <div class="flex justify-between items-center mb-4">
+                    <label class="block text-sm font-medium text-gray-700"
+                        >Features</label
+                    >
+                    <button
+                        type="button"
+                        id="add-feature-btn"
+                        class="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors"
+                    >
+                        + Add Feature
+                    </button>
+                </div>
+                <div id="features-container" class="space-y-3"></div>
+            </div>
+
+            <div class="pt-4 border-t">
+                <button
+                    type="submit"
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                >
+                    Simpan Perubahan
+                </button>
+            </div>
+        </form>
+    </div>
+</AdminLayout>
+
+<script>
+    import { db } from "../../../lib/firebase";
+    import { doc, getDoc, setDoc } from "firebase/firestore";
+
+    const form = document.getElementById("hero-form") as HTMLFormElement;
+    const badgeInput = document.getElementById("badge") as HTMLInputElement;
+    const titleInput = document.getElementById("title") as HTMLInputElement;
+    const titleHighlightInput = document.getElementById(
+        "titleHighlight",
+    ) as HTMLInputElement;
+    const descriptionInput = document.getElementById(
+        "description",
+    ) as HTMLTextAreaElement;
+    const catalogSubtitleInput = document.getElementById(
+        "catalogSubtitle",
+    ) as HTMLTextAreaElement;
+    const featuresContainer = document.getElementById("features-container");
+    const addFeatureBtn = document.getElementById("add-feature-btn");
+
+    let features: string[] = [];
+
+    // Load data
+    async function loadData() {
+        try {
+            const docRef = doc(db, "content", "hero");
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                if (badgeInput) badgeInput.value = data.badge || "";
+                if (titleInput) titleInput.value = data.title || "";
+                if (titleHighlightInput)
+                    titleHighlightInput.value = data.titleHighlight || "";
+                if (descriptionInput)
+                    descriptionInput.value = data.description || "";
+                if (catalogSubtitleInput)
+                    catalogSubtitleInput.value = data.catalogSubtitle || "";
+                features = data.features || [];
+            }
+
+            renderFeatures();
+        } catch (error) {
+            console.error("Error loading data:", error);
+            alert("Gagal memuat data. Silakan coba lagi.");
+        }
+    }
+
+    function renderFeatures() {
+        if (!featuresContainer) return;
+        featuresContainer.innerHTML = "";
+
+        features.forEach((feature, index) => {
+            const featureDiv = document.createElement("div");
+            featureDiv.className = "flex gap-2 items-center";
+            featureDiv.innerHTML = `
+                <input 
+                    type="text" 
+                    data-index="${index}"
+                    value="${feature}"
+                    placeholder="e.g., Sesuai Syariat"
+                    class="feature-input flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                />
+                <button 
+                    type="button" 
+                    data-index="${index}"
+                    class="remove-feature-btn px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors"
+                >
+                    Remove
+                </button>
+            `;
+            featuresContainer.appendChild(featureDiv);
+        });
+
+        // Attach event listeners
+        featuresContainer.querySelectorAll(".feature-input").forEach((el) => {
+            el.addEventListener("change", handleFeatureChange);
+        });
+
+        featuresContainer
+            .querySelectorAll(".remove-feature-btn")
+            .forEach((btn) => {
+                btn.addEventListener("click", handleRemoveFeature);
+            });
+    }
+
+    function handleFeatureChange(e: Event) {
+        const target = e.target as HTMLInputElement;
+        const index = parseInt(target.dataset.index || "0");
+        features[index] = target.value;
+    }
+
+    function handleRemoveFeature(e: Event) {
+        const target = e.target as HTMLButtonElement;
+        const index = parseInt(target.dataset.index || "0");
+        features.splice(index, 1);
+        renderFeatures();
+    }
+
+    addFeatureBtn?.addEventListener("click", () => {
+        features.push("");
+        renderFeatures();
+    });
+
+    form?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.textContent = "Menyimpan...";
+            (submitBtn as HTMLButtonElement).disabled = true;
+        }
+
+        try {
+            const data = {
+                badge: badgeInput.value,
+                title: titleInput.value,
+                titleHighlight: titleHighlightInput.value,
+                description: descriptionInput.value,
+                catalogSubtitle: catalogSubtitleInput.value,
+                features: features.filter((f) => f.trim() !== ""), // Remove empty features
+                updatedAt: new Date().toISOString(),
+            };
+
+            await setDoc(doc(db, "content", "hero"), data);
+            alert("Data berhasil disimpan!");
+        } catch (error) {
+            console.error("Error saving data:", error);
+            alert("Gagal menyimpan data: " + (error as Error).message);
+        } finally {
+            if (submitBtn) {
+                submitBtn.textContent = "Simpan Perubahan";
+                (submitBtn as HTMLButtonElement).disabled = false;
+            }
+        }
+    });
+
+    loadData();
+</script>

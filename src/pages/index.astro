@@ -1,0 +1,42 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
+import Hero from "../components/Hero.astro";
+import Catalog from "../components/Catalog.astro";
+import HowToBuy from "../components/HowToBuy.astro";
+import Footer from "../components/Footer.astro";
+import { db } from "../lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
+
+interface SeoData {
+	title?: string;
+	description?: string;
+	keywords?: string;
+	ogImage?: string;
+	ogTitle?: string;
+	ogDescription?: string;
+}
+
+let seoData: SeoData = {};
+try {
+	const seoSnap = await getDoc(doc(db, "seo", "landing"));
+	if (seoSnap.exists()) {
+		seoData = seoSnap.data() as SeoData;
+	}
+} catch (e) {
+	console.error("Failed to fetch SEO:", e);
+}
+---
+
+<Layout
+	title={seoData.title || "Qurban Berkah - Katalog Hewan Qurban Terpercaya"}
+	seo={seoData}
+>
+	<Navbar />
+	<main>
+		<Hero />
+		<Catalog />
+		<HowToBuy />
+	</main>
+	<Footer />
+</Layout>

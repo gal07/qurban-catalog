@@ -1,0 +1,171 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+---
+
+<AdminLayout title="Ikuti Kami">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4">
+            Manage Social Media
+        </h1>
+        <p class="text-gray-600 mb-6">
+            Add and manage social media links displayed in the footer.
+        </p>
+
+        <div id="social-links-container" class="space-y-4 mb-6"></div>
+
+        <button
+            type="button"
+            id="add-link-btn"
+            class="mb-6 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+        >
+            + Add Social Media
+        </button>
+
+        <div class="pt-4 border-t">
+            <button
+                type="button"
+                id="save-btn"
+                class="w-full max-w-lg flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+            >
+                Simpan Perubahan
+            </button>
+        </div>
+    </div>
+</AdminLayout>
+
+<script>
+    import { db } from "../../../lib/firebase";
+    import { doc, getDoc, setDoc } from "firebase/firestore";
+
+    const container = document.getElementById("social-links-container");
+    const addBtn = document.getElementById("add-link-btn");
+    const saveBtn = document.getElementById("save-btn");
+
+    const platforms = [
+        "Facebook",
+        "Instagram",
+        "Twitter",
+        "WhatsApp",
+        "YouTube",
+        "TikTok",
+        "LinkedIn",
+    ];
+
+    let socialLinks: Array<{ platform: string; url: string }> = [];
+
+    // Load data
+    async function loadData() {
+        try {
+            const docRef = doc(db, "content", "social");
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                socialLinks = data.links || [];
+            }
+
+            renderLinks();
+        } catch (error) {
+            console.error("Error loading data:", error);
+            alert("Gagal memuat data. Silakan coba lagi.");
+        }
+    }
+
+    function renderLinks() {
+        if (!container) return;
+        container.innerHTML = "";
+
+        socialLinks.forEach((link, index) => {
+            const linkDiv = document.createElement("div");
+            linkDiv.className =
+                "flex gap-4 items-start p-4 bg-gray-50 rounded-lg";
+            linkDiv.innerHTML = `
+                <div class="flex-1">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Platform</label>
+                    <select 
+                        data-index="${index}" 
+                        data-field="platform"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                    >
+                        ${platforms.map((p) => `<option value="${p}" ${p === link.platform ? "selected" : ""}>${p}</option>`).join("")}
+                    </select>
+                </div>
+                <div class="flex-[2]">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">URL</label>
+                    <input 
+                        type="url" 
+                        data-index="${index}" 
+                        data-field="url"
+                        value="${link.url}"
+                        placeholder="https://..."
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                    />
+                </div>
+                <div class="pt-6">
+                    <button 
+                        type="button" 
+                        data-index="${index}"
+                        class="remove-btn px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
+                    >
+                        Remove
+                    </button>
+                </div>
+            `;
+            container.appendChild(linkDiv);
+        });
+
+        // Attach event listeners
+        container.querySelectorAll("select, input").forEach((el) => {
+            el.addEventListener("change", handleChange);
+        });
+
+        container.querySelectorAll(".remove-btn").forEach((btn) => {
+            btn.addEventListener("click", handleRemove);
+        });
+    }
+
+    function handleChange(e: Event) {
+        const target = e.target as HTMLInputElement | HTMLSelectElement;
+        const index = parseInt(target.dataset.index || "0");
+        const field = target.dataset.field as "platform" | "url";
+
+        if (socialLinks[index]) {
+            socialLinks[index][field] = target.value;
+        }
+    }
+
+    function handleRemove(e: Event) {
+        const target = e.target as HTMLButtonElement;
+        const index = parseInt(target.dataset.index || "0");
+        socialLinks.splice(index, 1);
+        renderLinks();
+    }
+
+    addBtn?.addEventListener("click", () => {
+        socialLinks.push({ platform: platforms[0], url: "" });
+        renderLinks();
+    });
+
+    saveBtn?.addEventListener("click", async () => {
+        saveBtn.textContent = "Menyimpan...";
+        (saveBtn as HTMLButtonElement).disabled = true;
+
+        try {
+            const data = {
+                links: socialLinks,
+                updatedAt: new Date().toISOString(),
+            };
+
+            await setDoc(doc(db, "content", "social"), data);
+            alert("Data berhasil disimpan!");
+        } catch (error) {
+            console.error("Error saving data:", error);
+            alert("Gagal menyimpan data: " + (error as Error).message);
+        } finally {
+            saveBtn.textContent = "Simpan Perubahan";
+            (saveBtn as HTMLButtonElement).disabled = false;
+        }
+    });
+
+    loadData();
+</script>

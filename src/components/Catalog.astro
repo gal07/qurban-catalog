@@ -1,0 +1,723 @@
+---
+import { db } from "../lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
+
+// Fetch catalog subtitle from hero content
+let catalogSubtitle =
+  "Pilih hewan qurban terbaik Anda. Harga sudah termasuk biaya perawatan dan pengantaran (area terjangkau).";
+
+try {
+  const heroSnap = await getDoc(doc(db, "content", "hero"));
+  if (heroSnap.exists()) {
+    const data = heroSnap.data();
+    catalogSubtitle = data.catalogSubtitle || catalogSubtitle;
+  }
+} catch (error) {
+  console.error("Error fetching catalog subtitle:", error);
+}
+---
+
+<section id="catalog" class="catalog">
+  <div class="container">
+    <div class="section-header">
+      <h2 class="section-title">Katalog Hewan Qurban</h2>
+      <p class="section-subtitle">
+        {catalogSubtitle}
+      </p>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p>Memuat katalog...</p>
+    </div>
+
+    <!-- Grid Container -->
+    <div id="animal-grid" class="animal-grid">
+      <!-- Animals will be injected here by JS -->
+    </div>
+
+    <!-- Load More -->
+    <div id="load-more-container" class="load-more-container hidden">
+      <button id="btn-load-more" class="btn-load-more">
+        Muat Lebih Banyak
+      </button>
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="empty-state hidden">
+      <div class="empty-icon">🐂</div>
+      <h3>Stok Belum Tersedia</h3>
+      <p>
+        Mohon maaf, saat ini belum ada hewan qurban yang tersedia. Silakan
+        hubungi kami untuk informasi lebih lanjut.
+      </p>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { db } from "../lib/firebase";
+  import {
+    collection,
+    getDocs,
+    query,
+    where,
+    orderBy,
+    limit,
+    startAfter,
+    type QueryDocumentSnapshot,
+    type DocumentData,
+  } from "firebase/firestore";
+
+  let lastVisible: QueryDocumentSnapshot<DocumentData> | null = null;
+  const PAGE_SIZE = 9;
+  let isLoading = false;
+
+  async function loadCatalog(isNextPage = false) {
+    const grid = document.getElementById("animal-grid");
+    const loading = document.getElementById("loading");
+    const empty = document.getElementById("empty-state");
+    const loadMoreBtn = document.getElementById("btn-load-more");
+    const loadMoreContainer = document.getElementById("load-more-container");
+
+    if (!grid || !loading || !empty || !loadMoreBtn || !loadMoreContainer)
+      return;
+    if (isLoading) return;
+
+    isLoading = true;
+
+    try {
+      // Setup UI for restart vs load more
+      if (!isNextPage) {
+        // Only show full loading spinner on initial load
+        if (!grid.hasChildNodes()) {
+          loading.style.display = "block";
+        }
+        empty.classList.add("hidden");
+        loadMoreContainer.classList.add("hidden");
+      } else {
+        loadMoreBtn.textContent = "Memuat...";
+        loadMoreBtn.setAttribute("disabled", "true");
+      }
+
+      // Fetch settings once if not cached/stored (simplification: fetch every init load for now)
+      // Ideally we fetch settings separately, but sticking to existing pattern
+      let waNumber = "628123456789";
+      let waTemplate =
+        "Halo, saya tertarik dengan hewan qurban {name} seharga {price}. Apakah masih tersedia?";
+
+      if (!isNextPage || !window.catalogSettings) {
+        const settingsSnap = await getDocs(collection(db, "setting_wa"));
+        if (!settingsSnap.empty) {
+          const sData = settingsSnap.docs[0].data();
+          if (sData.whatsappNumber) waNumber = sData.whatsappNumber;
+          if (sData.messageTemplate) waTemplate = sData.messageTemplate;
+          window.catalogSettings = { waNumber, waTemplate };
+        }
+      } else {
+        waNumber = window.catalogSettings.waNumber;
+        waTemplate = window.catalogSettings.waTemplate;
+      }
+
+      // Query Construction
+      // Note: 'available' desc -> true first. 'updatedAt' or 'name' as secondary sort recommended.
+      // If index is missing, firestore will error and provide a link.
+      let q;
+      const animalsRef = collection(db, "animals");
+
+      if (isNextPage && lastVisible) {
+        q = query(
+          animalsRef,
+          orderBy("available", "desc"),
+          orderBy("name", "asc"), // Secondary sort for stable pagination
+          startAfter(lastVisible),
+          limit(PAGE_SIZE),
+        );
+      } else {
+        q = query(
+          animalsRef,
+          orderBy("available", "desc"),
+          orderBy("name", "asc"),
+          limit(PAGE_SIZE),
+        );
+      }
+
+      let animalsSnap;
+      try {
+        animalsSnap = await getDocs(q);
+      } catch (err) {
+        const error = err as any;
+        // Check for missing index error (Firebase code: failed-precondition)
+        if (
+          error.code === "failed-precondition" ||
+          error.message?.includes("index")
+        ) {
+          console.warn(
+            "⚠️ Firestore Index Missing. Falling back to simple sort.",
+            err,
+          );
+          console.log(
+            "👉 Click the link in the error above to create the index!",
+          );
+
+          // Fallback Query: Simple sort by name only
+          if (isNextPage && lastVisible) {
+            q = query(
+              animalsRef,
+              orderBy("name", "asc"),
+              startAfter(lastVisible),
+              limit(PAGE_SIZE),
+            );
+          } else {
+            q = query(animalsRef, orderBy("name", "asc"), limit(PAGE_SIZE));
+          }
+          animalsSnap = await getDocs(q);
+        } else {
+          throw err; // Re-throw other errors
+        }
+      }
+
+      loading.style.display = "none";
+      loadMoreBtn.textContent = "Muat Lebih Banyak";
+      loadMoreBtn.removeAttribute("disabled");
+
+      if (animalsSnap.empty) {
+        if (!isNextPage) {
+          grid.innerHTML = "";
+          empty.classList.remove("hidden");
+        }
+        loadMoreContainer.classList.add("hidden");
+        isLoading = false;
+        return;
+      }
+
+      // Update cursor
+      lastVisible = animalsSnap.docs[animalsSnap.docs.length - 1];
+
+      // Reset grid only on first page load
+      if (!isNextPage) {
+        grid.innerHTML = "";
+      }
+
+      animalsSnap.forEach((doc) => {
+        const animal = doc.data();
+        const isAvailable = animal.available;
+
+        // Format Price
+        const formattedPrice =
+          "Rp " + Number(animal.price).toLocaleString("id-ID");
+
+        // Format WhatsApp Message
+        let message = waTemplate
+          .replace(/{name}/g, animal.name)
+          .replace(/{price}/g, formattedPrice);
+
+        const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`;
+
+        // Create Card Element
+        const card = document.createElement("div");
+        card.className = "animal-grid-item"; // Wrapper for direct grid child if needed, or stick to animal-card
+        // Use existing structure, but we need to ensure the wrapper style is applied
+        // The previous CSS used .animal-grid :global(.animal-card) which works fine if we inject .animal-card
+
+        // Image Logic
+        const imageUrl =
+          animal.imageUrl ||
+          `https://placehold.co/400x300/e2e8f0/1e293b?text=${encodeURIComponent(animal.name)}`;
+
+        // Re-using the HTML structure
+        card.innerHTML = `
+                <div class="animal-card ${!isAvailable ? "sold-out" : ""}">
+                    <div class="card-image-wrapper">
+                        <img src="${imageUrl}" alt="${animal.name}" loading="lazy" class="card-img" />
+                        ${!isAvailable ? '<div class="sold-overlay"><span>TERJUAL</span></div>' : ""}
+                        <div class="card-badges">
+                             <span class="badge-pill ${animal.type === "Sapi" ? "badge-cow" : "badge-goat"}">${animal.type}</span>
+                             <span class="badge-pill badge-weight">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z"></path></svg>
+                                ${animal.weight} Kg
+                             </span>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">${animal.name}</h3>
+                        <p class="card-desc">${animal.description || "Hewan qurban berkualitas, sehat dan sesuai syariat."}</p>
+                        
+                        <div class="card-pricing">
+                            <span class="price-label">Harga Spesial</span>
+                            <span class="price-value">${formattedPrice}</span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a href="${waUrl}" 
+                           class="btn btn-whatsapp ${!isAvailable ? "btn-disabled" : ""}"
+                           ${!isAvailable ? "disabled" : ""}
+                           target="_blank"
+                           rel="noopener noreferrer">
+                           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="btn-icon">
+                                <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.592 2.654-.696c1.001.572 2.073.811 3.195.811 3.186 0 5.775-2.588 5.775-5.775 0-3.172-2.573-5.779-5.765-5.779zm-4.735 9.077c-.328-.506-.525-.976-.525-1.503 0-1.859 1.516-3.376 3.376-3.376 1.854 0 3.366 1.513 3.366 3.372 0 1.86-1.507 3.377-3.362 3.377a3.345 3.345 0 0 1-1.602-.41l-1.354.355.361-1.321c.14-.15.20-.294.20-.294zm6.059-3.4c-.115-1.129 1.154-1.637 1.166-1.642l.068-.027-.059-.047c-.636-.508-1.464-.783-2.332-.783-2.064 0-3.744 1.68-3.744 3.745 0 1.05.441 1.996 1.144 2.662l1.666 4.606 5.86-1.547a4.912 4.912 0 0 0 1.126-.411l-.055-.175c-.279-.884-1.296-3.085-1.455-3.313a.625.625 0 0 0-.441-.247c-.287.001-.482.001-.54.001l-.25.003-.092.235c-.066.168-.291.803-.541.803-.049 0-.097-.008-.145-.024-.523-.178-1.549-.801-2.029-2.083.473-.207.653-.787.653-.787zM12.05 2C6.714 2 2.375 6.345 2.375 11.69c0 2.003.559 3.869 1.528 5.464L2.001 22l6.216-1.55c.983.398 2.091.631 3.298.631 7.218 0 12.485-6.574 12.485-11.69C24 4.095 18.647 2 12.05 2z"/>
+                                <path fill-rule="evenodd" clip-rule="evenodd" d="M12.05 3.67c5.176 0 9.39 4.215 9.39 9.39 0 5.176-4.214 9.39-9.39 9.39-1.619 0-3.13-.448-4.444-1.22l-.242-.142-3.232.846.864-3.14-.15-.246A9.324 9.324 0 0 1 2.66 13.06c0-5.176 4.214-9.39 9.39-9.39zm0 1.58c-4.306 0-7.81 3.504-7.81 7.81 0 1.488.423 2.875 1.153 4.053l.482.78-1.125 4.093 4.208-1.104.764.453a7.777 7.777 0 0 0 3.998 1.109c4.306 0 7.81-3.504 7.81-7.81 0-4.306-3.504-7.81-7.81-7.81zm-4.37 5.253c.25.002.5.002.75.002.164 0 .326.01.482.046.208.049.467.228.619.464.21.328.718 1.439.815 1.706.115.318.06.637-.14 0.908-.18.244-.45.45-.494.494-.218.218-.464.332-.234.732.228.396 1.01 1.666 2.162 2.69 1.47 1.309 2.709 1.737 3.12 1.821.411.084.721-.137.962-.379.24-.242.492-.516.732-.516.12 0 .237.06.336.172.099.112 1.94 1.139 2.158 1.258.218.118.261.272.261.545 0 .272 0 .908-1.242 1.453-1.635.717-3.708.272-5.462-1.482-1.754-1.754-2.199-3.827-1.482-5.462.545-1.242 1.181-1.242 1.453-1.242z" fill="#FFF"/>
+                           </svg>
+                           <span>${isAvailable ? "Pesan via WhatsApp" : "Habis Terjual"}</span>
+                        </a>
+                    </div>
+                </div>
+            `;
+        // Since .animal-grid is a grid, we append the card wrapper (which contains the animal-card)
+        // But previously I set `animal-card` relative to grid.
+        // Wait, the previous CSS ` .animal-grid :global(.animal-card) ` applies to the INNER div.
+        // The grid likely expects direct children.
+        // Let's just append the content of `card` as a child?
+        // Ah, `card` IS a `div` with `animal-grid-item` (or `animal-card` if I change it).
+        // Let's make `card` contain the `animal-card` class directly to match previous logic?
+        // Wait, my previous code replaced `card.className = "animal-grid-item"`
+        // The original code was `card.className = "animal-card ..."`.
+        // Let's revert to `card.className = 'animal-card ...'` and remove the inner wrapper if possible or adapt.
+        // Actually, the CSS target is `.animal-grid :global(.animal-card)`.
+        // So if I append `<div class="animal-card">...</div>` to `.animal-grid`, it works.
+        // So `card` should be that div.
+
+        // CORRECTION:
+        // `card.className` should just be empty or strictly for the grid item if needed.
+        // But the innerHTML I proposed above STARTS with `<div class="animal-card ...">`.
+        // This means I would have `<div><div class="animal-card">...</div></div>`.
+        // This breaks the grid layout if the grid applies to direct children.
+        // The Grid CSS is `.animal-grid { display: grid; ... }`.
+        // So direct children are grid items.
+        // So I should make the `card` element ITSELF the `.animal-card`.
+
+        // Let's fix the `card` creation to match original structure but with new content.
+        card.className = `animal-card ${!isAvailable ? "sold-out" : ""}`;
+        card.innerHTML = `
+             <div class="card-image-wrapper">
+                 <img src="${imageUrl}" alt="${animal.name}" loading="lazy" class="card-img" />
+                 ${!isAvailable ? '<div class="sold-overlay"><span>TERJUAL</span></div>' : ""}
+                 <div class="card-badges">
+                      <span class="badge-pill ${animal.type === "Sapi" ? "badge-cow" : "badge-goat"}">${animal.type}</span>
+                      <span class="badge-pill badge-weight">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z"></path></svg>
+                         ${animal.weight} Kg
+                      </span>
+                 </div>
+             </div>
+             <div class="card-content">
+                 <h3 class="card-title">${animal.name}</h3>
+                 <p class="card-desc">${animal.description || "Hewan qurban berkualitas, sehat dan sesuai syariat."}</p>
+                 
+                 <div class="card-pricing">
+                     <span class="price-label">Harga Spesial</span>
+                     <span class="price-value">${formattedPrice}</span>
+                 </div>
+             </div>
+             <div class="card-footer">
+                 <a href="${waUrl}" 
+                    class="btn btn-whatsapp ${!isAvailable ? "btn-disabled" : ""}"
+                    ${!isAvailable ? "disabled" : ""}
+                    target="_blank"
+                    rel="noopener noreferrer">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="btn-icon">
+                         <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.592 2.654-.696c1.001.572 2.073.811 3.195.811 3.186 0 5.775-2.588 5.775-5.775 0-3.172-2.573-5.779-5.765-5.779zm-4.735 9.077c-.328-.506-.525-.976-.525-1.503 0-1.859 1.516-3.376 3.376-3.376 1.854 0 3.366 1.513 3.366 3.372 0 1.86-1.507 3.377-3.362 3.377a3.345 3.345 0 0 1-1.602-.41l-1.354.355.361-1.321c.14-.15.20-.294.20-.294zm6.059-3.4c-.115-1.129 1.154-1.637 1.166-1.642l.068-.027-.059-.047c-.636-.508-1.464-.783-2.332-.783-2.064 0-3.744 1.68-3.744 3.745 0 1.05.441 1.996 1.144 2.662l1.666 4.606 5.86-1.547a4.912 4.912 0 0 0 1.126-.411l-.055-.175c-.279-.884-1.296-3.085-1.455-3.313a.625.625 0 0 0-.441-.247c-.287.001-.482.001-.54.001l-.25.003-.092.235c-.066.168-.291.803-.541.803-.049 0-.097-.008-.145-.024-.523-.178-1.549-.801-2.029-2.083.473-.207.653-.787.653-.787zM12.05 2C6.714 2 2.375 6.345 2.375 11.69c0 2.003.559 3.869 1.528 5.464L2.001 22l6.216-1.55c.983.398 2.091.631 3.298.631 7.218 0 12.485-6.574 12.485-11.69C24 4.095 18.647 2 12.05 2z"/>
+                         <path fill-rule="evenodd" clip-rule="evenodd" d="M12.05 3.67c5.176 0 9.39 4.215 9.39 9.39 0 5.176-4.214 9.39-9.39 9.39-1.619 0-3.13-.448-4.444-1.22l-.242-.142-3.232.846.864-3.14-.15-.246A9.324 9.324 0 0 1 2.66 13.06c0-5.176 4.214-9.39 9.39-9.39zm0 1.58c-4.306 0-7.81 3.504-7.81 7.81 0 1.488.423 2.875 1.153 4.053l.482.78-1.125 4.093 4.208-1.104.764.453a7.777 7.777 0 0 0 3.998 1.109c4.306 0 7.81-3.504 7.81-7.81 0-4.306-3.504-7.81-7.81-7.81zm-4.37 5.253c.25.002.5.002.75.002.164 0 .326.01.482.046.208.049.467.228.619.464.21.328.718 1.439.815 1.706.115.318.06.637-.14 0.908-.18.244-.45.45-.494.494-.218.218-.464.332-.234.732.228.396 1.01 1.666 2.162 2.69 1.47 1.309 2.709 1.737 3.12 1.821.411.084.721-.137.962-.379.24-.242.492-.516.732-.516.12 0 .237.06.336.172.099.112 1.94 1.139 2.158 1.258.218.118.261.272.261.545 0 .272 0 .908-1.242 1.453-1.635.717-3.708.272-5.462-1.482-1.754-1.754-2.199-3.827-1.482-5.462.545-1.242 1.181-1.242 1.453-1.242z" fill="#FFF"/>
+                    </svg>
+                    <span>${isAvailable ? "Pesan via WhatsApp" : "Habis Terjual"}</span>
+                 </a>
+             </div>
+        `;
+
+        grid.appendChild(card);
+      });
+
+      // Toggle Load More
+      if (animalsSnap.size < PAGE_SIZE) {
+        loadMoreContainer.classList.add("hidden");
+      } else {
+        loadMoreContainer.classList.remove("hidden");
+      }
+    } catch (e) {
+      console.error("Error loading catalogue:", e);
+      const error = e as any;
+      // If index error
+      if (error.message && error.message.includes("indexes")) {
+        console.warn(
+          "Firestore Index Required: Check console for link to create index.",
+        );
+      }
+
+      loading.innerHTML = `
+            <div class="error-state">
+                <p>⚠️ Gagal memuat data katalog.</p>
+                <button onclick="window.location.reload()" class="btn btn-sm btn-primary">Muat Ulang</button>
+            </div>
+        `;
+    } finally {
+      isLoading = false;
+    }
+  }
+
+  // Initialize
+  document.addEventListener("DOMContentLoaded", () => {
+    loadCatalog(false);
+
+    const loadMoreBtn = document.getElementById("btn-load-more");
+    if (loadMoreBtn) {
+      loadMoreBtn.addEventListener("click", () => {
+        loadCatalog(true);
+      });
+    }
+  });
+
+  // Global interface for settings (optional, keeps TS happy if strict)
+  declare global {
+    interface Window {
+      catalogSettings: any;
+    }
+  }
+</script>
+
+<style>
+  /* ... existing styles ... */
+  /* Add Load More Styles */
+  .load-more-container {
+    text-align: center;
+    margin-top: 3rem;
+  }
+
+  .btn-load-more {
+    background-color: white;
+    color: var(--color-primary-dark);
+    border: 1px solid var(--color-primary-light);
+    padding: 0.75rem 2rem;
+    font-weight: 600;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  }
+
+  .btn-load-more:hover {
+    background-color: var(--color-primary);
+    color: white;
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+
+  .btn-load-more:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .catalog {
+    padding: 6rem 0;
+    background-color: var(--color-bg);
+  }
+
+  .section-header {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto 4rem;
+  }
+
+  .section-subtitle {
+    color: var(--color-text-muted);
+    font-size: 1.125rem;
+    margin-top: -1.5rem; /* Pull closer to title */
+  }
+
+  /* Loading & Empty States */
+  .loading,
+  .empty-state,
+  .error-state {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: var(--color-text-muted);
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    margin: 0 auto 1.5rem;
+    border: 4px solid var(--color-bg);
+    border-top: 4px solid var(--color-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  .empty-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  /* Grid Layout */
+  .animal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2.5rem;
+  }
+
+  /* Card Design - Floating & clean */
+  .animal-grid :global(.animal-card) {
+    background: var(--color-surface);
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05); /* Soft, deep shadow */
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy spring */
+    border: none; /* No border for clean look */
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+    z-index: 1;
+  }
+
+  .animal-grid :global(.animal-card:hover) {
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15); /* Stronger lift */
+    z-index: 10;
+  }
+
+  /* Card Image */
+  .animal-grid :global(.card-image-wrapper) {
+    position: relative;
+    height: 280px; /* Taller image for impact */
+    background-color: #f1f5f9;
+    overflow: hidden;
+  }
+
+  .animal-grid :global(.card-img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.7s ease;
+  }
+
+  .animal-grid :global(.animal-card:hover .card-img) {
+    transform: scale(1.1);
+  }
+
+  /* Badges - Floating Pills */
+  .animal-grid :global(.card-badges) {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    z-index: 10;
+    align-items: flex-start;
+  }
+
+  .animal-grid :global(.badge-pill) {
+    backdrop-filter: blur(8px);
+    padding: 0.35rem 0.85rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .animal-grid :global(.badge-cow) {
+    background-color: rgba(255, 255, 255, 0.95);
+    color: var(--color-primary-dark);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .animal-grid :global(.badge-goat) {
+    background-color: rgba(255, 255, 255, 0.95);
+    color: var(--color-secondary);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  .animal-grid :global(.badge-weight) {
+    background-color: rgba(30, 41, 59, 0.8); /* Dark slate */
+    color: white;
+    backdrop-filter: blur(4px);
+  }
+
+  /* Content */
+  .animal-grid :global(.card-content) {
+    padding: 1.5rem 1.5rem 0.5rem; /* Reduced bottom padding */
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    text-align: center; /* Center align content */
+  }
+
+  .animal-grid :global(.card-title) {
+    margin: 0 0 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--color-text);
+    font-family: var(--font-serif);
+    letter-spacing: -0.025em;
+  }
+
+  .animal-grid :global(.card-desc) {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Pricing Section */
+  .animal-grid :global(.card-pricing) {
+    margin-top: auto; /* Push to bottom of content area */
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .animal-grid :global(.price-label) {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-bottom: 0.25rem;
+  }
+
+  .animal-grid :global(.price-value) {
+    color: var(--color-secondary); /* Accent color */
+    font-weight: 800;
+    font-size: 1.75rem; /* Large price */
+    letter-spacing: -1px;
+    line-height: 1;
+    text-shadow: 0 2px 10px rgba(251, 191, 36, 0.1);
+  }
+
+  /* Footer & Button */
+  .animal-grid :global(.card-footer) {
+    padding: 1rem 1.5rem 1.5rem;
+    margin-top: 0;
+    border-top: none; /* Removed line */
+  }
+
+  .animal-grid :global(.btn-whatsapp) {
+    background: linear-gradient(
+      to right,
+      var(--color-primary),
+      var(--color-primary-light)
+    );
+    color: white;
+    width: 100%; /* Full Width */
+    padding: 1rem;
+    font-size: 1rem;
+    font-weight: 700;
+    border-radius: 1rem; /* Slightly rounded rect */
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Center content */
+    position: relative;
+    overflow: hidden;
+  }
+
+  .animal-grid :global(.btn-whatsapp::after) {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(255, 255, 255, 0.2), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .animal-grid :global(.btn-whatsapp:hover) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(4, 120, 87, 0.4);
+  }
+
+  .animal-grid :global(.btn-whatsapp:hover::after) {
+    opacity: 1;
+  }
+
+  .animal-grid :global(.btn-icon) {
+    width: 24px;
+    height: 24px;
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.1));
+    position: absolute;
+    left: 1.5rem;
+  }
+
+  /* Sold Out State */
+  .animal-grid :global(.sold-overlay) {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(255, 255, 255, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    backdrop-filter: blur(4px);
+  }
+
+  .animal-grid :global(.sold-overlay span) {
+    background-color: #ef4444;
+    color: white;
+    padding: 1rem 3rem;
+    font-weight: 900;
+    font-size: 1.5rem;
+    transform: rotate(-10deg);
+    border: 4px solid white;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .animal-grid :global(.animal-card.sold-out) {
+    filter: grayscale(1);
+    border: 1px dashed #cbd5e1;
+    background: #f8fafc;
+    box-shadow: none;
+  }
+
+  .animal-grid :global(.animal-card.sold-out .card-pricing),
+  .animal-grid :global(.animal-card.sold-out .btn-whatsapp) {
+    opacity: 0.5;
+  }
+
+  .animal-grid :global(.btn-disabled) {
+    background: #e2e8f0;
+    color: #94a3b8;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  .animal-grid :global(.btn-disabled:hover) {
+    transform: none;
+    box-shadow: none;
+  }
+</style>

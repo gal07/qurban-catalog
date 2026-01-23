@@ -1,0 +1,419 @@
+---
+import "../styles/global.css";
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title} | Qurban Admin</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body
+    class="bg-gray-50 font-sans text-slate-800 antialiased h-screen flex overflow-hidden"
+  >
+    <!-- Mobile Sidebar Backdrop -->
+    <div
+      id="sidebar-backdrop"
+      class="fixed inset-0 bg-gray-900/50 z-40 lg:hidden hidden transition-opacity opacity-0"
+    >
+    </div>
+
+    <!-- Sidebar -->
+    <aside
+      id="sidebar"
+      class="fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 text-white transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-auto flex flex-col shadow-xl"
+    >
+      <div
+        class="flex items-center justify-between h-16 px-6 bg-slate-950 border-b border-slate-800"
+      >
+        <h3
+          class="text-xl font-bold bg-gradient-to-r from-sky-400 to-blue-500 bg-clip-text text-transparent"
+        >
+          Qurban Admin
+        </h3>
+        <button
+          id="close-sidebar"
+          class="lg:hidden text-slate-400 hover:text-white transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            ><line x1="18" y1="6" x2="6" y2="18"></line><line
+              x1="6"
+              y1="6"
+              x2="18"
+              y2="18"></line></svg
+          >
+        </button>
+      </div>
+
+      <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+        <a
+          href="/admin/dashboard"
+          class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 group text-slate-300 hover:bg-slate-800 hover:text-white hover:shadow-md"
+        >
+          <span
+            class="mr-3 text-slate-400 group-hover:text-sky-400 transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              ><rect width="7" height="9" x="3" y="3" rx="1"></rect><rect
+                width="7"
+                height="5"
+                x="14"
+                y="3"
+                rx="1"></rect><rect width="7" height="9" x="14" y="12" rx="1"
+              ></rect><rect width="7" height="5" x="3" y="16" rx="1"
+              ></rect></svg
+            >
+          </span>
+          Dashboard
+        </a>
+        <a
+          href="/admin/animals"
+          class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 group text-slate-300 hover:bg-slate-800 hover:text-white hover:shadow-md"
+        >
+          <span
+            class="mr-3 text-slate-400 group-hover:text-emerald-400 transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              ><path
+                d="M12 5c.67 0 1.35.09 2 .26 1.78-2 5.03-2.84 6.42-2.26 1.4.58-.42 7-.42 7 .57 1.07 1 2.24 1 3.44C21 17.9 16.97 21 12 21s-9-3.1-9-7.56c0-1.25.43-2.42 1-3.44 0 0-1.89-6.42-.5-7 1.39-.58 4.67.26 6.5 2.26.65-.17 1.33-.26 2-.26z"
+              ></path></svg
+            >
+          </span>
+          Hewan Qurban
+        </a>
+
+        <!-- Manage Content Dropdown -->
+        <div>
+          <button
+            id="content-menu-btn"
+            class="w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 group text-slate-300 hover:bg-slate-800 hover:text-white hover:shadow-md"
+          >
+            <div class="flex items-center">
+              <span
+                class="mr-3 text-slate-400 group-hover:text-amber-400 transition-colors"
+                id="content-menu-icon"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  ><path
+                    d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                  ></path><polyline points="14 2 14 8 20 8"></polyline><line
+                    x1="16"
+                    y1="13"
+                    x2="8"
+                    y2="13"></line><line x1="16" y1="17" x2="8" y2="17"
+                  ></line><polyline points="10 9 9 9 8 9"></polyline></svg
+                >
+              </span>
+              Manage Content
+            </div>
+            <svg
+              id="content-chevron"
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="transition-transform duration-200"
+              ><polyline points="6 9 12 15 18 9"></polyline></svg
+            >
+          </button>
+          <div id="content-submenu" class="hidden mt-1 pl-4 space-y-1">
+            <a
+              href="/admin/content/hero"
+              class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-800/50"
+            >
+              First Screen
+            </a>
+            <a
+              href="/admin/content/how-to-buy"
+              class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-800/50"
+            >
+              Cara Pemesanan
+            </a>
+            <a
+              href="/admin/content/contact"
+              class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-800/50"
+            >
+              Hubungi Kami
+            </a>
+            <a
+              href="/admin/content/footer"
+              class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-800/50"
+            >
+              Footer Text
+            </a>
+            <a
+              href="/admin/content/social"
+              class="flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 text-slate-400 hover:text-white hover:bg-slate-800/50"
+            >
+              Ikuti Kami
+            </a>
+          </div>
+        </div>
+        <a
+          href="/admin/settings"
+          class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 group text-slate-300 hover:bg-slate-800 hover:text-white hover:shadow-md"
+        >
+          <span
+            class="mr-3 text-slate-400 group-hover:text-purple-400 transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              ><path
+                d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
+              ></path><circle cx="12" cy="12" r="3"></circle></svg
+            >
+          </span>
+          Pengaturan
+        </a>
+        <a
+          href="/admin/seo"
+          class="flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 group text-slate-300 hover:bg-slate-800 hover:text-white hover:shadow-md"
+        >
+          <span
+            class="mr-3 text-slate-400 group-hover:text-pink-400 transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              ><path d="M2 12h5"></path><path d="M22 12h-5"></path><path
+                d="M12 2v5"></path><path d="M12 22v-5"></path><path
+                d="M20.2 20.2l-2.9-2.9"></path><path d="M6.7 6.7l-2.9-2.9"
+              ></path><path d="M20.2 3.8l-2.9 2.9"></path><path
+                d="M6.7 17.3l-2.9 2.9"></path></svg
+            >
+          </span>
+          SEO & Social
+        </a>
+
+        <div class="mt-auto pt-6 border-t border-slate-800">
+          <button
+            id="logout-btn"
+            class="w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 text-rose-400 hover:bg-rose-900/20 hover:text-rose-300"
+          >
+            <span class="mr-3">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                ><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"
+                ></path><polyline points="16 17 21 12 16 7"></polyline><line
+                  x1="21"
+                  x2="9"
+                  y1="12"
+                  y2="12"></line></svg
+              >
+            </span>
+            Logout
+          </button>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden bg-gray-50/50">
+      <header
+        class="bg-white shadow-sm border-b border-gray-100 h-16 flex items-center justify-between px-6 lg:px-8"
+      >
+        <div class="flex items-center">
+          <button
+            id="open-sidebar"
+            class="mr-4 text-gray-500 hover:text-gray-700 focus:outline-none lg:hidden p-1 rounded-md hover:bg-gray-100"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              ><line x1="3" y1="12" x2="21" y2="12"></line><line
+                x1="3"
+                y1="6"
+                x2="21"
+                y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg
+            >
+          </button>
+          <h2 class="text-xl font-semibold text-gray-800">{title}</h2>
+        </div>
+        <div class="flex items-center space-x-4">
+          <!-- Add user profile or notifications here if needed -->
+          <div
+            class="h-8 w-8 rounded-full bg-sky-100 flex items-center justify-center text-sky-600 font-bold border border-sky-200"
+          >
+            A
+          </div>
+        </div>
+      </header>
+
+      <main class="flex-1 overflow-y-auto px-6 py-8 lg:px-8">
+        <slot />
+      </main>
+    </div>
+
+    <script>
+      // Use inline script to avoid external file dependency issues or missing imports
+      // Sidebar Logic
+      const sidebar = document.getElementById("sidebar");
+      const openBtn = document.getElementById("open-sidebar");
+      const closeBtn = document.getElementById("close-sidebar");
+      const backdrop = document.getElementById("sidebar-backdrop");
+      const logoutBtn = document.getElementById("logout-btn");
+
+      function toggleSidebar() {
+        if (!sidebar || !backdrop) return;
+        const isClosed = sidebar.classList.contains("-translate-x-full");
+        if (isClosed) {
+          sidebar.classList.remove("-translate-x-full");
+          backdrop.classList.remove("hidden");
+          setTimeout(() => backdrop.classList.remove("opacity-0"), 10);
+        } else {
+          sidebar.classList.add("-translate-x-full");
+          backdrop.classList.add("opacity-0");
+          setTimeout(() => backdrop.classList.add("hidden"), 300);
+        }
+      }
+
+      openBtn?.addEventListener("click", toggleSidebar);
+      closeBtn?.addEventListener("click", toggleSidebar);
+      backdrop?.addEventListener("click", toggleSidebar);
+
+      // Highlight active link
+      const currentPath = window.location.pathname;
+      const links = document.querySelectorAll("nav a");
+      links.forEach((link) => {
+        const href = link.getAttribute("href");
+        if (
+          href &&
+          (href === currentPath ||
+            (currentPath.startsWith(href) && href !== "/admin"))
+        ) {
+          link.classList.add("bg-slate-800", "text-white", "shadow-md");
+          link.classList.remove("text-slate-300");
+          const icon = link.querySelector("span");
+          if (icon) icon.className = "mr-3 text-sky-400";
+        }
+      });
+
+      // Dropdown Logic
+      const contentBtn = document.getElementById("content-menu-btn");
+      const contentSubmenu = document.getElementById("content-submenu");
+      const contentChevron = document.getElementById("content-chevron");
+      const contentIcon = document.getElementById("content-menu-icon");
+
+      function toggleContentMenu() {
+        if (!contentSubmenu || !contentChevron) return;
+        contentSubmenu.classList.toggle("hidden");
+        contentChevron.classList.toggle("rotate-180");
+
+        // Save state to localStorage to persist across navigation
+        const isOpen = !contentSubmenu.classList.contains("hidden");
+        localStorage.setItem("admin-content-menu-open", String(isOpen));
+      }
+
+      contentBtn?.addEventListener("click", toggleContentMenu);
+
+      // Check active state for submenu items and restore state
+      const submenuLinks = contentSubmenu?.querySelectorAll("a");
+      let isChildActive = false;
+
+      submenuLinks?.forEach((link) => {
+        const href = link.getAttribute("href");
+        if (href && (href === currentPath || currentPath.startsWith(href))) {
+          link.classList.add("text-white", "bg-slate-800/50", "text-amber-400");
+          link.classList.remove("text-slate-400");
+          isChildActive = true;
+        }
+      });
+
+      // Restore menu state if stored or if child is active
+      const storedState = localStorage.getItem("admin-content-menu-open");
+      if (isChildActive || storedState === "true") {
+        contentSubmenu?.classList.remove("hidden");
+        contentChevron?.classList.add("rotate-180");
+        contentBtn?.classList.add("text-white");
+        if (contentIcon)
+          contentIcon.className = "mr-3 text-amber-400 transition-colors";
+      }
+
+      logoutBtn?.addEventListener("click", async () => {
+        // Basic logout structure, can be replaced with actual auth logic
+        // For now redirect to home or login
+        window.location.href = "/";
+      });
+    </script>
+  </body>
+</html>

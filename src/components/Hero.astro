@@ -1,0 +1,235 @@
+---
+import { db } from "../lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
+
+// Default Data
+let heroData = {
+  badge: "Edisi Idul Adha 2026",
+  title: "Qurban Sempurna untuk",
+  titleHighlight: "Ibadah Terbaik",
+  description:
+    "Kami menyediakan hewan qurban (Sapi & Kambing) berkualitas premium, sehat, dan sesuai syariat. Amanah dan terpercaya untuk menyempurnakan ibadah Anda.",
+  features: ["Sesuai Syariat", "Sehat & Gemuk", "Gratis Ongkir*"],
+};
+
+try {
+  const docSnap = await getDoc(doc(db, "content", "hero"));
+  if (docSnap.exists()) {
+    const data = docSnap.data();
+    heroData.badge = data.badge || heroData.badge;
+    heroData.title = data.title || heroData.title;
+    heroData.titleHighlight = data.titleHighlight || heroData.titleHighlight;
+    heroData.description = data.description || heroData.description;
+    heroData.features = data.features || heroData.features;
+  }
+} catch (error) {
+  console.error("Error fetching hero data:", error);
+}
+---
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="container hero-container">
+    <div class="hero-content">
+      <span class="hero-badge">{heroData.badge}</span>
+      <h1>
+        {heroData.title}
+        <br />
+        <span class="highlight">{heroData.titleHighlight}</span>
+      </h1>
+      <p>
+        {heroData.description}
+      </p>
+      <div class="hero-actions">
+        <a href="#catalog" class="btn btn-primary">Lihat Katalog</a>
+        <a href="#how-to-buy" class="btn btn-secondary-white">Cara Pemesanan</a>
+      </div>
+
+      <div class="hero-trust">
+        {
+          heroData.features.map((feature) => (
+            <div class="trust-item">
+              <span class="trust-icon">✓</span>
+              <span>{feature}</span>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    height: 85vh; /* Almost full viewport height */
+    min-height: 600px;
+    display: flex;
+    align-items: center;
+    color: white;
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Use a nice gradient or a solid color if image fails, 
+       but here assumes an image would be ideal. 
+       Using a pattern from Hero Patterns or similar in CSS for now */
+    background-color: var(--color-primary-dark);
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2310b981' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    z-index: -2;
+  }
+
+  .hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+      circle at top right,
+      rgba(4, 120, 87, 0.4),
+      rgba(2, 44, 34, 0.8)
+    );
+    z-index: -1;
+  }
+
+  .hero-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+  }
+
+  .hero-content {
+    max-width: 700px;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    background-color: rgba(251, 191, 36, 0.2);
+    color: var(--color-accent);
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    backdrop-filter: blur(4px);
+  }
+
+  .hero h1 {
+    font-size: 3.5rem;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+    color: white; /* Override global h1 color */
+  }
+
+  .highlight {
+    color: var(--color-accent);
+    position: relative;
+    display: inline-block;
+  }
+
+  .highlight::after {
+    content: "";
+    position: absolute;
+    bottom: 5px;
+    left: 0;
+    width: 100%;
+    height: 8px;
+    background-color: rgba(251, 191, 36, 0.2);
+    z-index: -1;
+    transform: skewX(-15deg);
+  }
+
+  .hero p {
+    font-size: 1.25rem;
+    line-height: 1.6;
+    margin-bottom: 2.5rem;
+    color: rgba(255, 255, 255, 0.9);
+    max-width: 600px;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 3rem;
+  }
+
+  .btn-secondary-white {
+    background-color: transparent;
+    color: white;
+    border: 2px solid white;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
+    text-decoration: none;
+  }
+
+  .btn-secondary-white:hover {
+    background-color: white;
+    color: var(--color-primary-dark);
+  }
+
+  .hero-trust {
+    display: flex;
+    gap: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 2rem;
+  }
+
+  .trust-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .trust-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background-color: var(--color-accent);
+    color: var(--color-primary-dark);
+    border-radius: 50%;
+    font-size: 0.75rem;
+    font-weight: bold;
+  }
+
+  @media (max-width: 768px) {
+    .hero {
+      height: auto;
+      padding: 6rem 0 4rem;
+    }
+
+    .hero h1 {
+      font-size: 2.5rem;
+    }
+
+    .hero-actions {
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .hero-trust {
+      flex-direction: column; /* Stack trust items */
+      gap: 1rem;
+    }
+  }
+</style>
