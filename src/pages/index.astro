@@ -41,4 +41,49 @@ try {
 		<HowToBuy />
 	</main>
 	<Footer />
+
+	<!-- Tawk.to Lazy Load Script -->
+	<script is:inline>
+		function loadTawkTo() {
+			if (window.Tawk_API) return;
+			window.Tawk_API = window.Tawk_API || {};
+			window.Tawk_LoadStart = new Date();
+			(function () {
+				var s1 = document.createElement("script"),
+					s0 = document.getElementsByTagName("script")[0];
+				s1.async = true;
+				s1.src =
+					"https://embed.tawk.to/697c62ef0f84561c3546f8fb/1jg6u4ugs";
+				s1.charset = "UTF-8";
+				s1.setAttribute("crossorigin", "*");
+				s0.parentNode.insertBefore(s1, s0);
+			})();
+		}
+
+		function initLazyLoad() {
+			let loaded = false;
+			const trigger = () => {
+				if (loaded) return;
+				loaded = true;
+				loadTawkTo();
+			};
+
+			const events = ["mousemove", "scroll", "touchstart", "keydown"];
+			events.forEach((e) =>
+				window.addEventListener(e, trigger, {
+					once: true,
+					passive: true,
+				}),
+			);
+
+			// Fallback if no interaction
+			setTimeout(trigger, 4000);
+		}
+
+		if (document.readyState === "complete") {
+			initLazyLoad();
+		} else {
+			window.addEventListener("load", initLazyLoad);
+		}
+	</script>
 </Layout>
