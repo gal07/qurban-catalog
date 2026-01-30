@@ -1,0 +1,87 @@
+---
+
+---
+
+<script is:inline>
+    // 1. Try to load from local storage immediately to prevent flash
+    try {
+        const cachedTheme = localStorage.getItem("app-theme");
+        if (cachedTheme) {
+            const theme = JSON.parse(cachedTheme);
+            const root = document.documentElement;
+
+            if (theme.primary)
+                root.style.setProperty("--color-primary", theme.primary);
+            if (theme.primaryLight)
+                root.style.setProperty(
+                    "--color-primary-light",
+                    theme.primaryLight,
+                );
+            if (theme.primaryDark)
+                root.style.setProperty(
+                    "--color-primary-dark",
+                    theme.primaryDark,
+                );
+            if (theme.accent)
+                root.style.setProperty("--color-accent", theme.accent);
+            if (theme.accentLight)
+                root.style.setProperty(
+                    "--color-accent-light",
+                    theme.accentLight,
+                );
+        }
+    } catch (e) {
+        console.error("Error loading cached theme", e);
+    }
+</script>
+
+<script>
+    import { db } from "../lib/firebase";
+    import { doc, getDoc } from "firebase/firestore";
+
+    // 2. Fetch latest from Firestore and update
+    async function loadTheme() {
+        try {
+            const docRef = doc(db, "settings", "theme");
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const theme = docSnap.data();
+
+                // Save to cache
+                localStorage.setItem("app-theme", JSON.stringify(theme));
+
+                // Apply
+                const root = document.documentElement;
+                if (theme.primary)
+                    root.style.setProperty("--color-primary", theme.primary);
+                if (theme.primaryLight)
+                    root.style.setProperty(
+                        "--color-primary-light",
+                        theme.primaryLight,
+                    );
+                if (theme.primaryDark)
+                    root.style.setProperty(
+                        "--color-primary-dark",
+                        theme.primaryDark,
+                    );
+                if (theme.accent)
+                    root.style.setProperty("--color-accent", theme.accent);
+                if (theme.accentLight)
+                    root.style.setProperty(
+                        "--color-accent-light",
+                        theme.accentLight,
+                    );
+            }
+        } catch (error) {
+            console.error("Error fetching theme:", error);
+        }
+    }
+
+    // Load when idle or immediately
+    if (typeof requestIdleCallback === "function") {
+        requestIdleCallback(loadTheme);
+    } else {
+        loadTheme();
+    }
+</script>

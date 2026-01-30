@@ -20,6 +20,16 @@ export default {
                     800: '#075985',
                     900: '#0c4a6e',
                 },
+                // Dynamic System Colors
+                brand: {
+                    DEFAULT: 'var(--color-primary)',
+                    light: 'var(--color-primary-light)',
+                    dark: 'var(--color-primary-dark)',
+                },
+                accent: {
+                    DEFAULT: 'var(--color-accent)',
+                    light: 'var(--color-accent-light)',
+                },
                 slate: {
                     850: '#1e293b', // Custom dark for sidebar
                 }

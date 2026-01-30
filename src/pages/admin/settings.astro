@@ -61,6 +61,153 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
         </div>
       </form>
     </div>
+
+    <div class="h-8"></div>
+
+    <!-- Theme Settings -->
+    <div
+      class="bg-white shadow-sm ring-1 ring-slate-900/5 rounded-xl p-6 sm:p-8"
+    >
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h3 class="text-lg font-medium text-slate-900">Pengaturan Tema</h3>
+          <p class="text-sm text-slate-500">Sesuaikan warna tampilan website</p>
+        </div>
+      </div>
+
+      <form id="theme-settings-form" class="space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Primary -->
+          <div class="space-y-4">
+            <h4 class="text-sm font-medium text-slate-900 border-b pb-2">
+              Warna Utama (Primary)
+            </h4>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Primary Base</label
+              >
+              <div class="flex gap-2">
+                <input
+                  type="color"
+                  id="color-primary"
+                  class="h-10 w-12 rounded cursor-pointer border-0 p-0"
+                />
+                <input
+                  type="text"
+                  id="text-primary"
+                  placeholder="#365BAB"
+                  class="flex-1 rounded-lg border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm px-3 border"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Primary Light</label
+              >
+              <div class="flex gap-2">
+                <input
+                  type="color"
+                  id="color-primary-light"
+                  class="h-10 w-12 rounded cursor-pointer border-0 p-0"
+                />
+                <input
+                  type="text"
+                  id="text-primary-light"
+                  placeholder="#5d7cc4"
+                  class="flex-1 rounded-lg border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm px-3 border"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Primary Dark</label
+              >
+              <div class="flex gap-2">
+                <input
+                  type="color"
+                  id="color-primary-dark"
+                  class="h-10 w-12 rounded cursor-pointer border-0 p-0"
+                />
+                <input
+                  type="text"
+                  id="text-primary-dark"
+                  placeholder="#2a4685"
+                  class="flex-1 rounded-lg border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm px-3 border"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Accent -->
+          <div class="space-y-4">
+            <h4 class="text-sm font-medium text-slate-900 border-b pb-2">
+              Warna Aksen (Accent)
+            </h4>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Accent Base</label
+              >
+              <div class="flex gap-2">
+                <input
+                  type="color"
+                  id="color-accent"
+                  class="h-10 w-12 rounded cursor-pointer border-0 p-0"
+                />
+                <input
+                  type="text"
+                  id="text-accent"
+                  placeholder="#75C9ED"
+                  class="flex-1 rounded-lg border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm px-3 border"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1"
+                >Accent Light</label
+              >
+              <div class="flex gap-2">
+                <input
+                  type="color"
+                  id="color-accent-light"
+                  class="h-10 w-12 rounded cursor-pointer border-0 p-0"
+                />
+                <input
+                  type="text"
+                  id="text-accent-light"
+                  placeholder="#a0e0fc"
+                  class="flex-1 rounded-lg border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm px-3 border"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div
+          class="pt-4 border-t border-slate-100 flex justify-between items-center"
+        >
+          <button
+            type="button"
+            id="reset-theme-btn"
+            class="text-sm text-slate-500 hover:text-slate-700"
+          >
+            Reset ke Default
+          </button>
+          <button
+            type="submit"
+            id="save-theme-btn"
+            class="inline-flex justify-center py-2.5 px-5 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-sky-600 hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 transition-colors"
+          >
+            Simpan Tema
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </AdminLayout>
 
