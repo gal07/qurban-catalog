@@ -70,6 +70,7 @@ export const POST: APIRoute = async ({ request }) => {
             JSON.stringify({
                 message: "Upload successful",
                 url: finalUrl,
+                key: uniqueName
             }),
             { status: 200 }
         );
