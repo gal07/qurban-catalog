@@ -1,0 +1,307 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+---
+
+<AdminLayout title="Sedekah Daging">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4">
+            Manage Sedekah Daging
+        </h1>
+        <p class="text-gray-600 mb-6">
+            Edit the content of the Sedekah Daging section.
+        </p>
+
+        <form id="sedekah-form" class="space-y-6 max-w-2xl">
+            <div>
+                <label
+                    for="badge"
+                    class="block text-sm font-medium text-gray-700 mb-1"
+                >
+                    Badge Text
+                </label>
+                <input
+                    type="text"
+                    id="badge"
+                    name="badge"
+                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                    placeholder="Program Spesial"
+                />
+            </div>
+
+            <div>
+                <label
+                    for="title"
+                    class="block text-sm font-medium text-gray-700 mb-1"
+                >
+                    Title
+                </label>
+                <input
+                    type="text"
+                    id="title"
+                    name="title"
+                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                    placeholder="Sedekah Daging"
+                />
+            </div>
+
+            <div>
+                <label
+                    for="titleHighlight"
+                    class="block text-sm font-medium text-gray-700 mb-1"
+                >
+                    Title Highlight
+                </label>
+                <input
+                    type="text"
+                    id="titleHighlight"
+                    name="titleHighlight"
+                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                    placeholder="Sebar Bahagia"
+                />
+            </div>
+
+            <div>
+                <label
+                    for="description"
+                    class="block text-sm font-medium text-gray-700 mb-1"
+                >
+                    Description
+                </label>
+                <textarea
+                    id="description"
+                    name="description"
+                    rows="4"
+                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                    placeholder="Salurkan kebahagiaan Idul Adha..."></textarea>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label
+                        for="buttonText"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Button Text
+                    </label>
+                    <input
+                        type="text"
+                        id="buttonText"
+                        name="buttonText"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Ikut Sedekah Daging"
+                    />
+                </div>
+                <div>
+                    <label
+                        for="buttonUrl"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Button URL
+                    </label>
+                    <input
+                        type="text"
+                        id="buttonUrl"
+                        name="buttonUrl"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="https://memberimakna.id"
+                    />
+                </div>
+            </div>
+
+            <div>
+                <label
+                    for="imageUrl"
+                    class="block text-sm font-medium text-gray-700 mb-1"
+                >
+                    Image URL
+                </label>
+                <input
+                    type="text"
+                    id="imageUrl"
+                    name="imageUrl"
+                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                    placeholder="/sedekah-daging.png"
+                />
+                <p class="text-xs text-gray-500 mt-1">
+                    Path to image in public folder or external URL.
+                </p>
+            </div>
+
+            <div>
+                <div class="flex justify-between items-center mb-4">
+                    <label class="block text-sm font-medium text-gray-700"
+                        >Trust Indicators</label
+                    >
+                    <button
+                        type="button"
+                        id="add-indicator-btn"
+                        class="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors"
+                    >
+                        + Add Indicator
+                    </button>
+                </div>
+                <div id="indicators-container" class="space-y-3"></div>
+            </div>
+
+            <div class="pt-4 border-t">
+                <button
+                    type="submit"
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                >
+                    Simpan Perubahan
+                </button>
+            </div>
+        </form>
+    </div>
+</AdminLayout>
+
+<script>
+    import { db } from "../../../lib/firebase";
+    import { doc, getDoc, setDoc } from "firebase/firestore";
+
+    const form = document.getElementById("sedekah-form") as HTMLFormElement;
+    const badgeInput = document.getElementById("badge") as HTMLInputElement;
+    const titleInput = document.getElementById("title") as HTMLInputElement;
+    const titleHighlightInput = document.getElementById(
+        "titleHighlight",
+    ) as HTMLInputElement;
+    const descriptionInput = document.getElementById(
+        "description",
+    ) as HTMLTextAreaElement;
+    const buttonTextInput = document.getElementById(
+        "buttonText",
+    ) as HTMLInputElement;
+    const buttonUrlInput = document.getElementById(
+        "buttonUrl",
+    ) as HTMLInputElement;
+    const imageUrlInput = document.getElementById(
+        "imageUrl",
+    ) as HTMLInputElement;
+    const indicatorsContainer = document.getElementById("indicators-container");
+    const addIndicatorBtn = document.getElementById("add-indicator-btn");
+
+    let trustIndicators: string[] = [];
+
+    // Load data
+    async function loadData() {
+        try {
+            const docRef = doc(db, "content", "sedekah_daging");
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                if (badgeInput) badgeInput.value = data.badge || "";
+                if (titleInput) titleInput.value = data.title || "";
+                if (titleHighlightInput)
+                    titleHighlightInput.value = data.titleHighlight || "";
+                if (descriptionInput)
+                    descriptionInput.value = data.description || "";
+                if (buttonTextInput)
+                    buttonTextInput.value = data.buttonText || "";
+                if (buttonUrlInput) buttonUrlInput.value = data.buttonUrl || "";
+                if (imageUrlInput) imageUrlInput.value = data.imageUrl || "";
+                trustIndicators = data.trustIndicators || [];
+            }
+
+            renderIndicators();
+        } catch (error) {
+            console.error("Error loading data:", error);
+            alert("Gagal memuat data. Silakan coba lagi.");
+        }
+    }
+
+    function renderIndicators() {
+        if (!indicatorsContainer) return;
+        indicatorsContainer.innerHTML = "";
+
+        trustIndicators.forEach((indicator, index) => {
+            const div = document.createElement("div");
+            div.className = "flex gap-2 items-center";
+            div.innerHTML = `
+                <input 
+                    type="text" 
+                    data-index="${index}"
+                    value="${indicator}"
+                    placeholder="e.g., Tepat Sasaran"
+                    class="indicator-input flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                />
+                <button 
+                    type="button" 
+                    data-index="${index}"
+                    class="remove-indicator-btn px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors"
+                >
+                    Remove
+                </button>
+            `;
+            indicatorsContainer.appendChild(div);
+        });
+
+        // Attach event listeners
+        indicatorsContainer
+            .querySelectorAll(".indicator-input")
+            .forEach((el) => {
+                el.addEventListener("change", handleIndicatorChange);
+            });
+
+        indicatorsContainer
+            .querySelectorAll(".remove-indicator-btn")
+            .forEach((btn) => {
+                btn.addEventListener("click", handleRemoveIndicator);
+            });
+    }
+
+    function handleIndicatorChange(e: Event) {
+        const target = e.target as HTMLInputElement;
+        const index = parseInt(target.dataset.index || "0");
+        trustIndicators[index] = target.value;
+    }
+
+    function handleRemoveIndicator(e: Event) {
+        const target = e.target as HTMLButtonElement;
+        const index = parseInt(target.dataset.index || "0");
+        trustIndicators.splice(index, 1);
+        renderIndicators();
+    }
+
+    addIndicatorBtn?.addEventListener("click", () => {
+        trustIndicators.push("");
+        renderIndicators();
+    });
+
+    form?.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.textContent = "Menyimpan...";
+            (submitBtn as HTMLButtonElement).disabled = true;
+        }
+
+        try {
+            const data = {
+                badge: badgeInput.value,
+                title: titleInput.value,
+                titleHighlight: titleHighlightInput.value,
+                description: descriptionInput.value,
+                buttonText: buttonTextInput.value,
+                buttonUrl: buttonUrlInput.value,
+                imageUrl: imageUrlInput.value,
+                trustIndicators: trustIndicators.filter((f) => f.trim() !== ""),
+                updatedAt: new Date().toISOString(),
+            };
+
+            await setDoc(doc(db, "content", "sedekah_daging"), data);
+            alert("Data berhasil disimpan!");
+        } catch (error) {
+            console.error("Error saving data:", error);
+            alert("Gagal menyimpan data: " + (error as Error).message);
+        } finally {
+            if (submitBtn) {
+                submitBtn.textContent = "Simpan Perubahan";
+                (submitBtn as HTMLButtonElement).disabled = false;
+            }
+        }
+    });
+
+    loadData();
+</script>

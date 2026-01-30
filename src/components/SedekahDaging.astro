@@ -1,0 +1,324 @@
+---
+import { db } from "../lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
+
+// Default Data
+let content = {
+    badge: "Program Spesial",
+    title: "Sedekah Daging",
+    titleHighlight: "Sebar Bahagia",
+    description:
+        "Salurkan kebahagiaan Idul Adha kepada mereka yang membutuhkan. Program Sedekah Daging memberimakna.id menyalurkan amanah Anda tepat sasaran hingga pelosok negeri.",
+    buttonText: "Ikut Sedekah Daging",
+    buttonUrl: "https://memberimakna.id",
+    imageUrl: "/sedekah-daging.png",
+    trustIndicators: ["Tepat Sasaran", "Laporan Transparan"],
+};
+
+try {
+    const docSnap = await getDoc(doc(db, "content", "sedekah_daging"));
+    if (docSnap.exists()) {
+        const data = docSnap.data();
+        content.badge = data.badge || content.badge;
+        content.title = data.title || content.title;
+        content.titleHighlight = data.titleHighlight || content.titleHighlight;
+        content.description = data.description || content.description;
+        content.buttonText = data.buttonText || content.buttonText;
+        content.buttonUrl = data.buttonUrl || content.buttonUrl;
+        content.imageUrl = data.imageUrl || content.imageUrl;
+        content.trustIndicators =
+            data.trustIndicators || content.trustIndicators;
+    }
+} catch (error) {
+    console.error("Error fetching sedekah daging data:", error);
+}
+---
+
+<section id="sedekah-daging" class="sedekah-section">
+    <div class="container">
+        <div class="content-wrapper">
+            <div class="text-content">
+                <span class="badge">{content.badge}</span>
+                <h2 class="title">
+                    {content.title}
+                    <br />
+                    <span class="highlight">{content.titleHighlight}</span>
+                </h2>
+                <p class="description">
+                    {content.description}
+                </p>
+
+                <div class="actions">
+                    <a
+                        href={content.buttonUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="btn btn-primary btn-cta"
+                    >
+                        {content.buttonText}
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="icon-arrow"
+                        >
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </a>
+                </div>
+
+                <div class="trust-indicators">
+                    {
+                        content.trustIndicators.map((item) => (
+                            <div class="trust-item">
+                                <span class="check-icon">✓</span> {item}
+                            </div>
+                        ))
+                    }
+                </div>
+            </div>
+
+            <div class="image-content">
+                <div class="image-wrapper">
+                    <img
+                        src={content.imageUrl}
+                        alt={content.title}
+                        class="hero-image"
+                        loading="lazy"
+                    />
+                    <!-- Decorative elements -->
+                    <div class="blob blob-1"></div>
+                    <div class="blob blob-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .sedekah-section {
+        padding: 6rem 0;
+        /* Using a very subtle background to differentiate slightly from whitespace, 
+       but keeping it light/clean as requested ("dont too much contrast") */
+        background: linear-gradient(
+            to bottom,
+            var(--color-bg) 0%,
+            #ffffff 100%
+        );
+        overflow: hidden;
+    }
+
+    .content-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 4rem;
+        flex-direction: row;
+    }
+
+    /* Text Side */
+    .text-content {
+        flex: 1;
+        max-width: 600px;
+    }
+
+    .badge {
+        display: inline-block;
+        background-color: rgba(16, 185, 129, 0.1);
+        color: var(--color-primary);
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+    }
+
+    .title {
+        font-size: 3rem;
+        line-height: 1.2;
+        margin-bottom: 1.5rem;
+        color: var(--color-text);
+        font-family: var(--font-serif);
+    }
+
+    .highlight {
+        color: var(--color-primary);
+        position: relative;
+        display: inline-block;
+    }
+
+    .highlight::after {
+        content: "";
+        position: absolute;
+        bottom: 5px;
+        left: 0;
+        width: 100%;
+        height: 12px;
+        background-color: rgba(
+            117,
+            201,
+            237,
+            0.3
+        ); /* Accent color transparent */
+        z-index: -1;
+        transform: skewX(-12deg);
+    }
+
+    .description {
+        font-size: 1.125rem;
+        line-height: 1.7;
+        color: var(--color-text-muted);
+        margin-bottom: 2.5rem;
+    }
+
+    .btn-cta {
+        padding: 1rem 2rem;
+        font-size: 1.125rem;
+        border-radius: 50px;
+        gap: 0.75rem;
+        box-shadow: 0 10px 25px -5px rgba(54, 91, 171, 0.4); /* Primary shadow */
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .btn-cta:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 30px -10px rgba(54, 91, 171, 0.5);
+    }
+
+    .icon-arrow {
+        transition: transform 0.3s ease;
+    }
+
+    .btn-cta:hover .icon-arrow {
+        transform: translateX(4px);
+    }
+
+    .trust-indicators {
+        margin-top: 3rem;
+        display: flex;
+        gap: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .trust-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 600;
+        color: var(--color-text);
+    }
+
+    .check-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        background-color: var(
+            --color-accent
+        ); /* Green/Teal from prompt or primary */
+        color: white; /* Or primary dark */
+        color: var(--color-primary-dark);
+        border-radius: 50%;
+        font-size: 0.75rem;
+        font-weight: bold;
+    }
+
+    /* Image Side */
+    .image-content {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        position: relative;
+    }
+
+    .image-wrapper {
+        position: relative;
+        width: 100%;
+        max-width: 500px;
+        aspect-ratio: 1/1; /* Square aspect for the generated image */
+    }
+
+    .hero-image {
+        width: 100%;
+        height: auto;
+        object-fit: contain;
+        position: relative;
+        z-index: 2;
+        filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.1));
+        transition: transform 0.5s ease;
+    }
+
+    .content-wrapper:hover .hero-image {
+        transform: scale(1.02);
+    }
+
+    /* Decorative Blobs */
+    .blob {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(60px);
+        z-index: 1;
+        opacity: 0.6;
+    }
+
+    .blob-1 {
+        width: 300px;
+        height: 300px;
+        background: var(--color-accent-light);
+        top: -20px;
+        right: -20px;
+        animation: float 8s ease-in-out infinite;
+    }
+
+    .blob-2 {
+        width: 250px;
+        height: 250px;
+        background: rgba(251, 191, 36, 0.2); /* Gold-ish */
+        bottom: -20px;
+        left: -20px;
+        animation: float 10s ease-in-out infinite reverse;
+    }
+
+    @keyframes float {
+        0%,
+        100% {
+            transform: translate(0, 0);
+        }
+        50% {
+            transform: translate(20px, -20px);
+        }
+    }
+
+    /* Responsive */
+    @media (max-width: 968px) {
+        .content-wrapper {
+            flex-direction: column-reverse;
+            text-align: center;
+            gap: 3rem;
+        }
+
+        .text-content {
+            max-width: 100%;
+        }
+
+        .title {
+            font-size: 2.5rem;
+        }
+
+        .trust-indicators {
+            justify-content: center;
+        }
+
+        .image-wrapper {
+            max-width: 400px;
+        }
+    }
+</style>
