@@ -215,6 +215,9 @@ try {
 
         const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`;
 
+        // WhatsApp Icon Font Awesome
+        const waIcon = `<i class="fab fa-whatsapp btn-icon-fa"></i>`;
+
         // Create Card Element
         const card = document.createElement("div");
         card.className = "animal-grid-item"; // Wrapper for direct grid child if needed, or stick to animal-card
@@ -255,10 +258,6 @@ try {
                            ${!isAvailable ? "disabled" : ""}
                            target="_blank"
                            rel="noopener noreferrer">
-                           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="btn-icon">
-                                <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.592 2.654-.696c1.001.572 2.073.811 3.195.811 3.186 0 5.775-2.588 5.775-5.775 0-3.172-2.573-5.779-5.765-5.779zm-4.735 9.077c-.328-.506-.525-.976-.525-1.503 0-1.859 1.516-3.376 3.376-3.376 1.854 0 3.366 1.513 3.366 3.372 0 1.86-1.507 3.377-3.362 3.377a3.345 3.345 0 0 1-1.602-.41l-1.354.355.361-1.321c.14-.15.20-.294.20-.294zm6.059-3.4c-.115-1.129 1.154-1.637 1.166-1.642l.068-.027-.059-.047c-.636-.508-1.464-.783-2.332-.783-2.064 0-3.744 1.68-3.744 3.745 0 1.05.441 1.996 1.144 2.662l1.666 4.606 5.86-1.547a4.912 4.912 0 0 0 1.126-.411l-.055-.175c-.279-.884-1.296-3.085-1.455-3.313a.625.625 0 0 0-.441-.247c-.287.001-.482.001-.54.001l-.25.003-.092.235c-.066.168-.291.803-.541.803-.049 0-.097-.008-.145-.024-.523-.178-1.549-.801-2.029-2.083.473-.207.653-.787.653-.787zM12.05 2C6.714 2 2.375 6.345 2.375 11.69c0 2.003.559 3.869 1.528 5.464L2.001 22l6.216-1.55c.983.398 2.091.631 3.298.631 7.218 0 12.485-6.574 12.485-11.69C24 4.095 18.647 2 12.05 2z"/>
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M12.05 3.67c5.176 0 9.39 4.215 9.39 9.39 0 5.176-4.214 9.39-9.39 9.39-1.619 0-3.13-.448-4.444-1.22l-.242-.142-3.232.846.864-3.14-.15-.246A9.324 9.324 0 0 1 2.66 13.06c0-5.176 4.214-9.39 9.39-9.39zm0 1.58c-4.306 0-7.81 3.504-7.81 7.81 0 1.488.423 2.875 1.153 4.053l.482.78-1.125 4.093 4.208-1.104.764.453a7.777 7.777 0 0 0 3.998 1.109c4.306 0 7.81-3.504 7.81-7.81 0-4.306-3.504-7.81-7.81-7.81zm-4.37 5.253c.25.002.5.002.75.002.164 0 .326.01.482.046.208.049.467.228.619.464.21.328.718 1.439.815 1.706.115.318.06.637-.14 0.908-.18.244-.45.45-.494.494-.218.218-.464.332-.234.732.228.396 1.01 1.666 2.162 2.69 1.47 1.309 2.709 1.737 3.12 1.821.411.084.721-.137.962-.379.24-.242.492-.516.732-.516.12 0 .237.06.336.172.099.112 1.94 1.139 2.158 1.258.218.118.261.272.261.545 0 .272 0 .908-1.242 1.453-1.635.717-3.708.272-5.462-1.482-1.754-1.754-2.199-3.827-1.482-5.462.545-1.242 1.181-1.242 1.453-1.242z" fill="#FFF"/>
-                           </svg>
                            <span>${isAvailable ? "Pesan via WhatsApp" : "Habis Terjual"}</span>
                         </a>
                     </div>
@@ -310,18 +309,33 @@ try {
                      <span class="price-value">${formattedPrice}</span>
                  </div>
              </div>
-             <div class="card-footer">
+             <div class="card-footer" style="${animal.urlCampaign ? "display: grid; grid-template-columns: 10fr 2fr; gap: 0.5rem;" : ""}">
+                 ${
+                   animal.urlCampaign
+                     ? `
+                    <a href="${animal.urlCampaign}" 
+                       class="btn btn-campaign"
+                       target="_blank"
+                       rel="noopener noreferrer">
+                       Beli Sekarang
+                    </a>
+                 `
+                     : ""
+                 }
                  <a href="${waUrl}" 
-                    class="btn btn-whatsapp ${!isAvailable ? "btn-disabled" : ""}"
+                    class="btn btn-whatsapp ${animal.urlCampaign ? "icon-only" : "full-width"} ${!isAvailable ? "btn-disabled" : ""}"
                     ${!isAvailable ? "disabled" : ""}
                     target="_blank"
-                    rel="noopener noreferrer">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" class="btn-icon">
-                         <path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.592 2.654-.696c1.001.572 2.073.811 3.195.811 3.186 0 5.775-2.588 5.775-5.775 0-3.172-2.573-5.779-5.765-5.779zm-4.735 9.077c-.328-.506-.525-.976-.525-1.503 0-1.859 1.516-3.376 3.376-3.376 1.854 0 3.366 1.513 3.366 3.372 0 1.86-1.507 3.377-3.362 3.377a3.345 3.345 0 0 1-1.602-.41l-1.354.355.361-1.321c.14-.15.20-.294.20-.294zm6.059-3.4c-.115-1.129 1.154-1.637 1.166-1.642l.068-.027-.059-.047c-.636-.508-1.464-.783-2.332-.783-2.064 0-3.744 1.68-3.744 3.745 0 1.05.441 1.996 1.144 2.662l1.666 4.606 5.86-1.547a4.912 4.912 0 0 0 1.126-.411l-.055-.175c-.279-.884-1.296-3.085-1.455-3.313a.625.625 0 0 0-.441-.247c-.287.001-.482.001-.54.001l-.25.003-.092.235c-.066.168-.291.803-.541.803-.049 0-.097-.008-.145-.024-.523-.178-1.549-.801-2.029-2.083.473-.207.653-.787.653-.787zM12.05 2C6.714 2 2.375 6.345 2.375 11.69c0 2.003.559 3.869 1.528 5.464L2.001 22l6.216-1.55c.983.398 2.091.631 3.298.631 7.218 0 12.485-6.574 12.485-11.69C24 4.095 18.647 2 12.05 2z"/>
-                         <path fill-rule="evenodd" clip-rule="evenodd" d="M12.05 3.67c5.176 0 9.39 4.215 9.39 9.39 0 5.176-4.214 9.39-9.39 9.39-1.619 0-3.13-.448-4.444-1.22l-.242-.142-3.232.846.864-3.14-.15-.246A9.324 9.324 0 0 1 2.66 13.06c0-5.176 4.214-9.39 9.39-9.39zm0 1.58c-4.306 0-7.81 3.504-7.81 7.81 0 1.488.423 2.875 1.153 4.053l.482.78-1.125 4.093 4.208-1.104.764.453a7.777 7.777 0 0 0 3.998 1.109c4.306 0 7.81-3.504 7.81-7.81 0-4.306-3.504-7.81-7.81-7.81zm-4.37 5.253c.25.002.5.002.75.002.164 0 .326.01.482.046.208.049.467.228.619.464.21.328.718 1.439.815 1.706.115.318.06.637-.14 0.908-.18.244-.45.45-.494.494-.218.218-.464.332-.234.732.228.396 1.01 1.666 2.162 2.69 1.47 1.309 2.709 1.737 3.12 1.821.411.084.721-.137.962-.379.24-.242.492-.516.732-.516.12 0 .237.06.336.172.099.112 1.94 1.139 2.158 1.258.218.118.261.272.261.545 0 .272 0 .908-1.242 1.453-1.635.717-3.708.272-5.462-1.482-1.754-1.754-2.199-3.827-1.482-5.462.545-1.242 1.181-1.242 1.453-1.242z" fill="#FFF"/>
-                    </svg>
-                    <span>${isAvailable ? "Pesan via WhatsApp" : "Habis Terjual"}</span>
-                 </a>
+                    rel="noopener noreferrer"
+                    aria-label="Chat WhatsApp">
+                                          ${
+                                            animal.urlCampaign
+                                              ? waIcon
+                                              : `
+                            <span>Pesan via WhatsApp</span>
+                           `
+                                          }
+                        </a>
              </div>
         `;
 
@@ -608,7 +622,7 @@ try {
   .animal-grid :global(.price-value) {
     color: var(--color-secondary); /* Accent color */
     font-weight: 800;
-    font-size: 1.75rem; /* Large price */
+    font-size: 1.5rem; /* Slightly smaller to fit */
     letter-spacing: -1px;
     line-height: 1;
     text-shadow: 0 2px 10px rgba(251, 191, 36, 0.1);
@@ -618,58 +632,119 @@ try {
   .animal-grid :global(.card-footer) {
     padding: 1rem 1.5rem 1.5rem;
     margin-top: 0;
-    border-top: none; /* Removed line */
+    border-top: none;
+    display: flex; /* Flexbox for better control */
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .animal-grid :global(.btn-campaign) {
+    background-color: var(--color-primary);
+    color: white;
+    padding: 0.75rem 1rem; /* Smaller padding */
+    font-size: 0.9rem;
+    font-weight: 700;
+    border-radius: 0.75rem;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    flex: 1; /* Take remaining space */
+  }
+
+  .animal-grid :global(.btn-campaign:hover) {
+    background-color: var(--color-primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.15);
   }
 
   .animal-grid :global(.btn-whatsapp) {
-    background: linear-gradient(
-      to right,
-      var(--color-primary),
-      var(--color-primary-light)
-    );
-    color: white;
-    width: 100%; /* Full Width */
-    padding: 1rem;
-    font-size: 1rem;
+    background-color: white; /* Changed to White */
+    color: #25d366; /* Green Text */
     font-weight: 700;
-    border-radius: 1rem; /* Slightly rounded rect */
+    border-radius: 0.75rem;
     text-decoration: none;
     transition: all 0.3s ease;
-    border: none;
+    border: 1px solid #25d366; /* Green Border */
     display: flex;
     align-items: center;
-    justify-content: center; /* Center content */
+    justify-content: center;
     position: relative;
     overflow: hidden;
-  }
-
-  .animal-grid :global(.btn-whatsapp::after) {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(rgba(255, 255, 255, 0.2), transparent);
-    opacity: 0;
-    transition: opacity 0.3s;
+    box-shadow: 0 4px 6px -1px rgba(37, 211, 102, 0.1);
   }
 
   .animal-grid :global(.btn-whatsapp:hover) {
+    background-color: #f0fdf4; /* Very light green */
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(4, 120, 87, 0.4);
+    box-shadow: 0 8px 15px -3px rgba(37, 211, 102, 0.2);
   }
 
-  .animal-grid :global(.btn-whatsapp:hover::after) {
-    opacity: 1;
+  /* SVG icon style for full width button */
+  .animal-grid :global(.btn-whatsapp .btn-icon) {
+    margin-right: 0.5rem;
+    color: #25d366;
   }
 
-  .animal-grid :global(.btn-icon) {
-    width: 24px;
-    height: 24px;
-    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.1));
-    position: absolute;
-    left: 1.5rem;
+  /* Font Awesome Icon Styles */
+  .animal-grid :global(.btn-icon-fa) {
+    font-size: 1.5rem; /* Default size for full width */
+    transition: all 0.3s ease;
+  }
+
+  .animal-grid :global(.btn-whatsapp.icon-only .btn-icon-fa) {
+    font-size: 2rem; /* Initial size */
+    color: #25d366; /* Green Color for white button */
+    display: block;
+    line-height: 1;
+  }
+
+  /* Specific styles for icon-only button (when campaign url exists) */
+  .animal-grid :global(.btn-whatsapp.icon-only) {
+    width: 3.5rem;
+    height: 3.5rem;
+    padding: 0;
+    border-radius: 50%; /* Circle */
+    flex-shrink: 0;
+    border: none;
+    background-color: white; /* Ensure white background */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .animal-grid :global(.btn-whatsapp.icon-only:hover .btn-icon-fa) {
+    transform: scale(1.1);
+  }
+
+  .animal-grid :global(.btn-whatsapp.icon-only:hover) {
+    background-color: #f0fdf4;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px -3px rgba(37, 211, 102, 0.3);
+  }
+
+  /* Specific styles for full button (when no campaign url) */
+  .animal-grid :global(.btn-whatsapp.full-width .btn-icon-fa) {
+    margin-right: 0.5rem;
+    color: #25d366;
+  }
+
+  /* Specific styles for full button (when no campaign url) */
+  .animal-grid :global(.btn-whatsapp.full-width) {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    border-radius: 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .animal-grid :global(.btn-whatsapp::after) {
+    content: ""; /* Remove simple gradient overlay for cleaner look */
+    display: none;
   }
 
   /* Sold Out State */

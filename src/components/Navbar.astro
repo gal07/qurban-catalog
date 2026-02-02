@@ -1,12 +1,23 @@
 ---
+import { db } from "../lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
+let logoUrl = "/logo.jpg";
+try {
+  const logoSnap = await getDoc(doc(db, "content", "logo"));
+  if (logoSnap.exists()) {
+    logoUrl = logoSnap.data().url || "/logo.jpg";
+  }
+} catch (e) {
+  console.error("Error fetching logo:", e);
+}
 ---
 
 <nav class="navbar" id="navbar">
   <div class="container navbar-container">
     <a href="/" class="logo">
       <img
-        src="/logo.jpg"
+        src={logoUrl}
         alt="Qurban Berkah Logo"
         class="h-12 w-auto mix-blend-multiply"
       />
@@ -14,7 +25,8 @@
 
     <div class="nav-menu" id="nav-menu">
       <ul class="nav-links">
-        <li><a href="#catalog" class="nav-link">Katalog</a></li>
+        <li><a href="/" class="nav-link">Beranda</a></li>
+        <li><a href="/#catalog" class="nav-link">Katalog</a></li>
         <li><a href="#sedekah-daging" class="nav-link">Sedekah Daging</a></li>
         <li><a href="#how-to-buy" class="nav-link">Cara Pemesanan</a></li>
       </ul>

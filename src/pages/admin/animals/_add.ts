@@ -1,5 +1,6 @@
 import { db } from '../../../lib/firebase';
 import { collection, addDoc } from 'firebase/firestore';
+import { showToast } from '../../../lib/toast';
 
 const form = document.getElementById('animal-form') as HTMLFormElement;
 const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
@@ -33,13 +34,13 @@ if (form) {
                 imageUrl = uploadData.url;
             } catch (err) {
                 console.error("Upload Error:", err);
-                alert("Gagal mengupload gambar. Silakan coba lagi.");
+                showToast("Gagal mengupload gambar. Silakan coba lagi.", 'error');
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Simpan Data';
                 return;
             }
         } else {
-            alert("Mohon pilih gambar hewan.");
+            showToast("Mohon pilih gambar hewan.", 'warning');
             submitBtn.disabled = false;
             submitBtn.textContent = 'Simpan Data';
             return;
@@ -52,6 +53,7 @@ if (form) {
             weight: Number((document.getElementById('weight') as HTMLInputElement).value),
             available: (document.getElementById('available') as HTMLInputElement).value === 'true',
             imageUrl: imageUrl,
+            urlCampaign: (document.getElementById('urlCampaign') as HTMLInputElement).value || null,
             description: (document.getElementById('description') as HTMLTextAreaElement).value,
             createdAt: new Date(),
             updatedAt: new Date()
@@ -59,11 +61,13 @@ if (form) {
 
         try {
             await addDoc(collection(db, "animals"), data);
-            alert('Data berhasil disimpan');
-            window.location.href = '/admin/animals';
+            showToast('Data berhasil disimpan', 'success');
+            setTimeout(() => {
+                window.location.href = '/admin/animals';
+            }, 1000);
         } catch (e) {
             console.error(e);
-            alert('Gagal menyimpan data');
+            showToast('Gagal menyimpan data', 'error');
             if (submitBtn) {
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Simpan Data';

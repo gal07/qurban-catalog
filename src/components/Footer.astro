@@ -15,11 +15,14 @@ let footerData = {
   socialLinks: [] as Array<{ platform: string; url: string }>,
 };
 
+let logoUrl = "/logo.jpg";
+
 try {
-  const [contactSnap, footerSnap, socialSnap] = await Promise.all([
+  const [contactSnap, footerSnap, socialSnap, logoSnap] = await Promise.all([
     getDoc(doc(db, "content", "hubungi_kami")),
     getDoc(doc(db, "content", "footer")),
     getDoc(doc(db, "content", "social")),
+    getDoc(doc(db, "content", "logo")),
   ]);
 
   if (contactSnap.exists()) {
@@ -38,6 +41,11 @@ try {
   if (socialSnap.exists()) {
     const data = socialSnap.data();
     footerData.socialLinks = data.links || [];
+  }
+
+  // Logo Logic
+  if (logoSnap.exists()) {
+    logoUrl = logoSnap.data().url || "/logo.jpg";
   }
 } catch (error) {
   console.error("Error fetching footer data:", error);
@@ -60,7 +68,7 @@ const socialIcons: Record<string, string> = {
     <div class="footer-brand">
       <div class="footer-brand-logo mb-4">
         <img
-          src="/logo.jpg"
+          src={logoUrl}
           alt="Qurban Berkah Logo"
           class="h-16 w-auto rounded-lg"
         />

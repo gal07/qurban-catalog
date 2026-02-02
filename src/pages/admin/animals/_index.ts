@@ -1,6 +1,7 @@
 import { db, auth } from '../../../lib/firebase';
 import { collection, getDocs, getDoc, deleteDoc, doc, addDoc, query, limit, startAfter, orderBy, type QueryDocumentSnapshot, type DocumentData } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
+import { showToast } from '../../../lib/toast';
 
 // --- DOM Elements ---
 const listContainer = document.getElementById('animal-list');
@@ -83,14 +84,14 @@ if (addForm) {
                 imageUrl = uploadData.url;
             } catch (err) {
                 console.error("Upload error:", err);
-                alert("Gagal mengupload gambar.");
+                showToast("Gagal mengupload gambar.", 'error');
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Simpan';
                 return;
             }
         } else {
             // Validate if image is required
-            alert("Mohon pilih gambar.");
+            showToast("Mohon pilih gambar.", 'warning');
             submitBtn.disabled = false;
             submitBtn.textContent = 'Simpan';
             return;
@@ -103,6 +104,7 @@ if (addForm) {
             weight: Number((document.getElementById('weight') as HTMLInputElement).value),
             available: (document.getElementById('available') as HTMLInputElement).value === 'true',
             imageUrl: imageUrl,
+            urlCampaign: (document.getElementById('urlCampaign') as HTMLInputElement).value || null,
             description: (document.getElementById('description') as HTMLTextAreaElement).value,
             createdAt: new Date(),
             updatedAt: new Date()
@@ -119,7 +121,7 @@ if (addForm) {
 
         } catch (e) {
             console.error("Error adding animal:", e);
-            alert('Gagal menyimpan data');
+            showToast('Gagal menyimpan data', 'error');
         } finally {
             if (submitBtn) {
                 submitBtn.disabled = false;
@@ -299,7 +301,7 @@ async function deleteAnimal(id: string) {
 
         // Optional: Re-fetch if list becomes empty?
     } catch (e) {
-        alert('Gagal menghapus');
+        showToast('Gagal menghapus', 'error');
         console.error(e);
     }
 }

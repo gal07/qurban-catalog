@@ -1,6 +1,7 @@
 import { db, auth } from '../../../../lib/firebase';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
+import { showToast } from '../../../../lib/toast';
 
 const form = document.getElementById('animal-form') as HTMLFormElement;
 const loading = document.getElementById('loading');
@@ -25,18 +26,19 @@ if (!idInput) {
                 (document.getElementById('price') as HTMLInputElement).value = data.price;
                 (document.getElementById('weight') as HTMLInputElement).value = data.weight;
                 (document.getElementById('available') as HTMLInputElement).value = String(data.available);
+                (document.getElementById('urlCampaign') as HTMLInputElement).value = data.urlCampaign || '';
                 (document.getElementById('imageUrl') as HTMLInputElement).value = data.imageUrl || '';
                 (document.getElementById('description') as HTMLTextAreaElement).value = data.description || '';
 
                 loading.style.display = 'none';
                 form.classList.remove('hidden');
             } else {
-                alert('Data tidak ditemukan');
-                window.location.href = '/admin/animals';
+                showToast('Data tidak ditemukan', 'error');
+                setTimeout(() => window.location.href = '/admin/animals', 1500);
             }
         } catch (e) {
             console.error(e);
-            alert('Error memuat data: ' + e); // Show error to user
+            showToast('Error memuat data: ' + e, 'error');
         }
     }
 
@@ -65,6 +67,7 @@ if (!idInput) {
                 price: Number((document.getElementById('price') as HTMLInputElement).value),
                 weight: Number((document.getElementById('weight') as HTMLInputElement).value),
                 available: (document.getElementById('available') as HTMLInputElement).value === 'true',
+                urlCampaign: (document.getElementById('urlCampaign') as HTMLInputElement).value || null,
                 imageUrl: (document.getElementById('imageUrl') as HTMLInputElement).value,
                 description: (document.getElementById('description') as HTMLTextAreaElement).value,
                 updatedAt: new Date()
@@ -72,11 +75,11 @@ if (!idInput) {
 
             try {
                 await updateDoc(doc(db, "animals", id), data);
-                alert('Data berhasil diupdate');
-                window.location.href = '/admin/animals';
+                showToast('Data berhasil diupdate', 'success');
+                setTimeout(() => window.location.href = '/admin/animals', 1000);
             } catch (e) {
                 console.error(e);
-                alert('Gagal menyimpan data');
+                showToast('Gagal menyimpan data', 'error');
                 if (submitBtn) {
                     submitBtn.disabled = false;
                     submitBtn.textContent = 'Update Data';

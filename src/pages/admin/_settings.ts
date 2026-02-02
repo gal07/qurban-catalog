@@ -1,6 +1,7 @@
 import { auth, db } from '../../lib/firebase';
 import { collection, getDocs, doc, addDoc, updateDoc, getDoc, setDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
+import { showToast } from '../../lib/toast';
 
 // --- WhatsApp Settings ---
 const settingsForm = document.getElementById('settings-form') as HTMLFormElement;
@@ -13,6 +14,12 @@ let settingWaDocId: string | null = null;
 const themeForm = document.getElementById('theme-settings-form') as HTMLFormElement;
 const saveThemeBtn = document.getElementById('save-theme-btn') as HTMLButtonElement;
 const resetThemeBtn = document.getElementById('reset-theme-btn') as HTMLButtonElement;
+
+// --- Logo Settings ---
+const logoForm = document.getElementById('logo-settings-form') as HTMLFormElement;
+const logoInput = document.getElementById('logo-file') as HTMLInputElement;
+const saveLogoBtn = document.getElementById('save-logo-btn') as HTMLButtonElement;
+const currentLogoImg = document.getElementById('current-logo-img') as HTMLImageElement;
 
 // Theme Inputs mapping (ID suffix -> property name)
 const themeInputs = [
@@ -122,6 +129,17 @@ async function fetchThemeSettings() {
     }
 }
 
+async function fetchLogoSettings() {
+    try {
+        const logoSnap = await getDoc(doc(db, "content", "logo"));
+        if (logoSnap.exists() && currentLogoImg) {
+            currentLogoImg.src = logoSnap.data().url || '/logo.jpg';
+        }
+    } catch (e) {
+        console.error("Error fetching logo:", e);
+    }
+}
+
 // --- Event Listeners ---
 
 settingsForm?.addEventListener('submit', async (e) => {
@@ -154,10 +172,10 @@ settingsForm?.addEventListener('submit', async (e) => {
                 settingWaDocId = docRef.id;
             }
         }
-        alert('Pengaturan WhatsApp berhasil disimpan!');
+        showToast('Pengaturan WhatsApp berhasil disimpan!', 'success');
     } catch (e) {
         console.error(e);
-        alert('Gagal menyimpan pengaturan WhatsApp.');
+        showToast('Gagal menyimpan pengaturan WhatsApp.', 'error');
     } finally {
         if (saveSettingsBtn) {
             saveSettingsBtn.disabled = false;
@@ -185,7 +203,7 @@ themeForm?.addEventListener('submit', async (e) => {
         const docRef = doc(db, "settings", "theme");
         await setDoc(docRef, newData, { merge: true });
 
-        alert('Tema berhasil disimpan! Refresh halaman untuk melihat perubahan.');
+        showToast('Tema berhasil disimpan! Refresh halaman untuk melihat perubahan.', 'success');
 
         // Optional: Update current session preview (though refresh is safer)
         const root = document.documentElement;
@@ -194,11 +212,61 @@ themeForm?.addEventListener('submit', async (e) => {
 
     } catch (e) {
         console.error(e);
-        alert('Gagal menyimpan tema.');
+        showToast('Gagal menyimpan tema.', 'error');
     } finally {
         if (saveThemeBtn) {
             saveThemeBtn.disabled = false;
             saveThemeBtn.textContent = 'Simpan Tema';
+        }
+    }
+});
+
+logoForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!logoInput.files || logoInput.files.length === 0) {
+        showToast("Pilih file logo terlebih dahulu.", 'warning');
+        return;
+    }
+
+    if (saveLogoBtn) {
+        saveLogoBtn.disabled = true;
+        saveLogoBtn.textContent = 'Mengupload...';
+    }
+
+    const file = logoInput.files[0];
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+        // Upload
+        const res = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!res.ok) throw new Error("Upload gagal");
+
+        const data = await res.json();
+        const logoUrl = data.url;
+
+        // Save to Firestore
+        await setDoc(doc(db, "content", "logo"), {
+            url: logoUrl,
+            updatedAt: new Date()
+        });
+
+        if (currentLogoImg) currentLogoImg.src = logoUrl;
+
+        showToast("Logo berhasil diupload dan disimpan!", 'success');
+        logoForm.reset();
+
+    } catch (e) {
+        console.error(e);
+        showToast("Gagal mengupload logo.", 'error');
+    } finally {
+        if (saveLogoBtn) {
+            saveLogoBtn.disabled = false;
+            saveLogoBtn.textContent = 'Upload & Simpan Logo';
         }
     }
 });
@@ -227,6 +295,7 @@ onAuthStateChanged(auth, (user) => {
     if (user) {
         fetchWASettings();
         fetchThemeSettings();
+        fetchLogoSettings();
     }
 });
 
