@@ -34,7 +34,19 @@ try {
   <body
     class="bg-gray-50 font-sans text-slate-800 antialiased h-screen flex overflow-hidden"
   >
-    <!-- Mobile Sidebar Backdrop -->
+    <!-- Auth Loading Overlay -->
+    <div
+      id="auth-loading"
+      class="fixed inset-0 z-50 bg-white flex flex-col items-center justify-center transition-opacity duration-300"
+    >
+      <div
+        class="w-12 h-12 border-4 border-slate-200 border-t-sky-600 rounded-full animate-spin mb-4"
+      >
+      </div>
+      <p class="text-slate-500 font-medium animate-pulse">Memeriksa akses...</p>
+    </div>
+
+    <!-- Sidebar Backdrop -->
     <div
       id="sidebar-backdrop"
       class="fixed inset-0 bg-gray-900/50 z-40 lg:hidden hidden transition-opacity opacity-0"
@@ -378,8 +390,27 @@ try {
     </div>
 
     <script>
-      import "../lib/toast";
-      // Use inline script to avoid external file dependency issues or missing imports
+      import { auth } from "../lib/firebase";
+      import { onAuthStateChanged, signOut } from "firebase/auth";
+
+      // Auth Logic
+      const authLoading = document.getElementById("auth-loading");
+
+      onAuthStateChanged(auth, (user) => {
+        if (!user) {
+          // No user is signed in, redirect to login
+          window.location.href = "/admin/login";
+        } else {
+          // User is signed in, hide loader
+          if (authLoading) {
+            authLoading.classList.add("opacity-0");
+            setTimeout(() => {
+              authLoading.style.display = "none";
+            }, 300);
+          }
+        }
+      });
+
       // Sidebar Logic
       const sidebar = document.getElementById("sidebar");
       const openBtn = document.getElementById("open-sidebar");
@@ -464,9 +495,14 @@ try {
       }
 
       logoutBtn?.addEventListener("click", async () => {
-        // Basic logout structure, can be replaced with actual auth logic
-        // For now redirect to home or login
-        window.location.href = "/";
+        try {
+          await signOut(auth);
+          // Auth listener will handle redirect
+        } catch (error) {
+          console.error("Logout Error:", error);
+          // Fallback
+          window.location.href = "/admin/login";
+        }
       });
     </script>
   </body>
