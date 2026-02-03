@@ -435,6 +435,17 @@ try {
       docNext.addEventListener("click", () => {
         grid.scrollBy({ left: 280, behavior: "smooth" });
       });
+
+      // Mobile Autoload (Infinite Scroll)
+      grid.addEventListener("scroll", () => {
+        if (window.innerWidth <= 768 && !isLoading) {
+          const { scrollLeft, scrollWidth, clientWidth } = grid;
+          // Trigger when user is 50px away from the end
+          if (scrollLeft + clientWidth >= scrollWidth - 50) {
+            loadCatalog(true);
+          }
+        }
+      });
     }
   });
 
