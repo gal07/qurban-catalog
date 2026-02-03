@@ -21,6 +21,10 @@ const canonicalURL = new URL(
 	Astro.url.pathname,
 	Astro.site || Astro.url.origin,
 );
+
+// Server-Side Region Detection (Vercel)
+const country = Astro.request.headers.get("x-vercel-ip-country") || "ID"; // Default to ID if local/missing
+const shouldAutoTranslate = country !== "ID";
 ---
 
 <!doctype html>
@@ -74,5 +78,71 @@ const canonicalURL = new URL(
 	</head>
 	<body>
 		<slot />
+
+		<!-- Google Translate Script -->
+		<script type="text/javascript" define:vars={{ shouldAutoTranslate }}>
+			// Determine if we need to force English
+			// Check if cookie already exists to avoid overwriting user preference
+			const hasCookie = document.cookie
+				.split(";")
+				.some((item) => item.trim().startsWith("googtrans="));
+
+			if (shouldAutoTranslate && !hasCookie) {
+				// Set cookie to translate from Indonesian (auto/id) to English (en)
+				// Domain should ideally be set to root, but generic path often works
+				document.cookie = "googtrans=/id/en; path=/";
+				document.cookie =
+					"googtrans=/id/en; path=/; domain=" +
+					window.location.hostname;
+			}
+
+			window.googleTranslateElementInit = function () {
+				new google.translate.TranslateElement(
+					{
+						pageLanguage: "id",
+						includedLanguages: "en,id",
+						layout: google.translate.TranslateElement.InlineLayout
+							.SIMPLE,
+					},
+					"google_translate_element",
+				);
+			};
+		</script>
+		<script
+			type="text/javascript"
+			src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+		></script>
+
+		<style is:global>
+			/* Hide Google Translate Toolbar/Banner - ALL POSSIBLE SELECTORS */
+			.goog-te-banner-frame,
+			.goog-te-banner-frame.skiptranslate,
+			iframe.goog-te-banner-frame,
+			iframe[id^=":"] {
+				display: none !important;
+				visibility: hidden !important;
+				height: 0 !important;
+				width: 0 !important;
+				opacity: 0 !important;
+				pointer-events: none !important;
+			}
+
+			body {
+				top: 0px !important;
+				position: static !important;
+				margin-top: 0px !important;
+			}
+
+			/* Hide the "Original text" popup */
+			.goog-te-balloon-frame {
+				display: none !important;
+			}
+
+			/* Fix for Google's injected styles */
+			.goog-text-highlight {
+				background: none !important;
+				box-shadow: none !important;
+			}
+		</style>
 	</body>
 </html>

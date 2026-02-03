@@ -33,6 +33,20 @@ try {
     </div>
 
     <div class="nav-actions">
+      <!-- Custom Language Switcher -->
+      <div class="lang-switch">
+        <button class="lang-btn active" data-lang="id">ID</button>
+        <span class="divider">|</span>
+        <button class="lang-btn" data-lang="en">EN</button>
+      </div>
+
+      <!-- Hidden Google Widget Container (Visually hidden but exist for script) -->
+      <div
+        id="google_translate_element"
+        style="position: absolute; opacity: 0; width: 0; height: 0; overflow: hidden; pointer-events: none;"
+      >
+      </div>
+
       <button
         class="mobile-menu-btn"
         id="mobile-menu-btn"
@@ -47,6 +61,67 @@ try {
 </nav>
 
 <script>
+  // Language Switcher Logic
+  function initLangSwitcher() {
+    const buttons = document.querySelectorAll(".lang-btn");
+
+    // Check current cookie
+    const cookie = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("googtrans="));
+    const currentLang = cookie && cookie.includes("/en") ? "en" : "id";
+
+    // Set Active State
+    buttons.forEach((btn) => {
+      if (btn.getAttribute("data-lang") === currentLang) {
+        btn.classList.add("active");
+        btn.classList.remove("text-slate-400");
+      } else {
+        btn.classList.remove("active");
+        btn.classList.add("text-slate-400");
+      }
+
+      // Add Click Listener
+      btn.addEventListener("click", () => {
+        const lang = btn.getAttribute("data-lang");
+
+        // Google Translate Cookie Format: /source/target
+        // Using 'auto' for source is often more reliable
+        const cookieValue = `/auto/${lang}`;
+        const dom = window.location.hostname;
+
+        // Nuking existing cookies aggressively to ensure clean state
+        document.cookie =
+          "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        document.cookie =
+          "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" +
+          dom;
+        document.cookie =
+          "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=." +
+          dom;
+
+        if (lang === "en") {
+          // Set for English
+          document.cookie = `googtrans=${cookieValue}; path=/`;
+          document.cookie = `googtrans=${cookieValue}; path=/; domain=${window.location.hostname}`;
+        } else {
+          // For ID, just clear it
+          document.cookie =
+            "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+          document.cookie =
+            "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" +
+            window.location.hostname;
+        }
+
+        // Reload to apply
+        window.location.reload();
+      });
+    });
+  }
+
+  // Init on load
+  initLangSwitcher();
+
   const mobileBtn = document.getElementById("mobile-menu-btn");
   const navMenu = document.getElementById("nav-menu");
   const navbar = document.getElementById("navbar");
@@ -157,6 +232,47 @@ try {
     display: flex;
     align-items: center;
     gap: 1rem;
+  }
+
+  .lang-switch {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    background: #f1f5f9;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .lang-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.2s;
+    color: #94a3b8; /* Slate 400 */
+  }
+
+  .lang-btn:hover {
+    color: var(--color-primary);
+  }
+
+  .lang-btn.active {
+    color: var(--color-primary);
+    font-weight: 700;
+  }
+
+  .divider {
+    color: #cbd5e1; /* Slate 300 */
+    font-size: 0.75rem;
+  }
+
+  /* Ensure it doesn't break layout on small screens */
+  @media (max-width: 380px) {
+    .lang-switch {
+      transform: scale(0.9);
+    }
   }
 
   .btn-login {
