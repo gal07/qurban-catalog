@@ -269,7 +269,7 @@ try {
         card.innerHTML = `
                 <div class="animal-card ${!isAvailable ? "sold-out" : ""}">
                     <div class="card-image-wrapper">
-                        <img src="${imageUrl}" alt="${animal.name}" loading="lazy" class="card-img" />
+                        <img src="${imageUrl}" alt="${animal.name}" loading="lazy" class="card-img" width="400" height="300" />
                         ${!isAvailable ? '<div class="sold-overlay"><span>TERJUAL</span></div>' : ""}
                         <div class="card-badges">
                              <span class="badge-pill ${animal.type === "Sapi" ? "badge-cow" : "badge-goat"}">${animal.type}</span>

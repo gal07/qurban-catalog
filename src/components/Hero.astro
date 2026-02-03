@@ -112,15 +112,23 @@ try {
 
   .hero-badge {
     display: inline-block;
-    background-color: rgba(251, 191, 36, 0.2);
-    color: var(--color-accent);
+    background-color: rgba(251, 191, 36, 0.9); /* Solid fallback for mobile */
+    color: var(--color-primary-dark); /* Ensure readable contrast */
     padding: 0.5rem 1rem;
     border-radius: 50px;
     font-weight: 600;
     font-size: 0.875rem;
     margin-bottom: 1.5rem;
-    border: 1px solid rgba(251, 191, 36, 0.3);
-    backdrop-filter: blur(4px);
+    border: 1px solid rgba(251, 191, 36, 0.5);
+  }
+
+  @media (min-width: 768px) {
+    .hero-badge {
+      background-color: rgba(251, 191, 36, 0.2);
+      backdrop-filter: blur(4px);
+      color: var(--color-accent);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+    }
   }
 
   .hero h1 {

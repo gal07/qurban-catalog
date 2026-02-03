@@ -267,6 +267,13 @@ try {
         filter: blur(60px);
         z-index: 1;
         opacity: 0.6;
+        display: none; /* Hide on mobile by default for perf */
+    }
+
+    @media (min-width: 768px) {
+        .blob {
+            display: block;
+        }
     }
 
     .blob-1 {
