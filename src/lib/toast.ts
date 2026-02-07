@@ -11,6 +11,10 @@ class ToastManager {
     }
 
     public show(message: string, type: ToastType = 'info') {
+        if (!document.body.contains(this.container)) {
+            document.body.appendChild(this.container);
+        }
+
         const toast = document.createElement('div');
         toast.className = `
             pointer-events-auto 

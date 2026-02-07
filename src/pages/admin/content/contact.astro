@@ -91,6 +91,7 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
 <script>
     import { db } from "../../../lib/firebase";
     import { doc, getDoc, setDoc } from "firebase/firestore";
+    import { showToast } from "../../../lib/toast";
 
     document.addEventListener("astro:page-load", () => {
         const form = document.getElementById("contact-form") as HTMLFormElement;
@@ -121,7 +122,7 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
                 }
             } catch (error) {
                 console.error("Error loading data:", error);
-                alert("Gagal memuat data. Silakan coba lagi.");
+                showToast("Gagal memuat data. Silakan coba lagi.", "error");
             }
         }
 
@@ -147,10 +148,13 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
                 };
 
                 await setDoc(doc(db, "content", "hubungi_kami"), data);
-                alert("Data berhasil disimpan!");
+                showToast("Data berhasil disimpan!", "success");
             } catch (error) {
                 console.error("Error saving data:", error);
-                alert("Gagal menyimpan data: " + (error as Error).message);
+                showToast(
+                    "Gagal menyimpan data: " + (error as Error).message,
+                    "error",
+                );
             } finally {
                 if (submitBtn) {
                     submitBtn.textContent = "Simpan Perubahan";

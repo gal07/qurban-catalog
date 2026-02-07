@@ -1,5 +1,6 @@
 import { db } from '../../lib/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { showToast } from '../../lib/toast';
 
 // Export init function
 export function init() {
@@ -7,14 +8,12 @@ export function init() {
     if (!form) return; // Guard
 
     const saveBtn = document.getElementById('save-btn') as HTMLButtonElement;
-    const statusMsg = document.getElementById('status-message');
+    // const statusMsg = document.getElementById('status-message'); // No longer needed
 
     // Inputs
     const titleInput = document.getElementById('title') as HTMLInputElement;
     const descInput = document.getElementById('description') as HTMLTextAreaElement;
     const keywordsInput = document.getElementById('keywords') as HTMLInputElement;
-
-    // Image Handling
     const fileInput = document.getElementById('ogFile') as HTMLInputElement;
     const urlInput = document.getElementById('ogImage') as HTMLInputElement;
     const previewImg = document.getElementById('image-preview') as HTMLImageElement;
@@ -41,6 +40,7 @@ export function init() {
             }
         } catch (e) {
             console.error("Error loading SEO data:", e);
+            showToast("Gagal memuat data SEO.", "error");
         }
     }
 
@@ -104,21 +104,11 @@ export function init() {
                 // Save to Firestore
                 await setDoc(doc(db, 'seo', 'landing'), data, { merge: true });
 
-                // Show Success
-                if (statusMsg) {
-                    statusMsg.textContent = "Berhasil disimpan!";
-                    statusMsg.className = "text-sm font-medium text-emerald-600";
-                    statusMsg.classList.remove('hidden');
-                    setTimeout(() => statusMsg.classList.add('hidden'), 3000);
-                }
+                showToast("Berhasil disimpan!", "success");
 
             } catch (error) {
                 console.error("Save error:", error);
-                if (statusMsg) {
-                    statusMsg.textContent = "Gagal menyimpan data.";
-                    statusMsg.className = "text-sm font-medium text-rose-600";
-                    statusMsg.classList.remove('hidden');
-                }
+                showToast("Gagal menyimpan data.", "error");
             } finally {
                 if (saveBtn) {
                     saveBtn.disabled = false;

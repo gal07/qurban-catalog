@@ -24,6 +24,14 @@ export function init() {
     const addForm = document.getElementById('add-animal-form') as HTMLFormElement;
     const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
 
+    // Delete Modal Elements
+    const deleteModal = document.getElementById('delete-modal');
+    const deleteModalBackdrop = document.getElementById('delete-modal-backdrop');
+    const deleteModalPanel = document.getElementById('delete-modal-panel');
+    const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+    const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+    let idToDelete: string | null = null;
+
     // Reset State
     lastVisible = null;
     isLoading = false;
@@ -55,7 +63,41 @@ export function init() {
     openModalBtn?.addEventListener('click', () => toggleModal(true));
     closeModalBtn?.addEventListener('click', () => toggleModal(false));
     // Close on click outside
+    // Close on click outside
     modalBackdrop?.addEventListener('click', () => toggleModal(false));
+
+    // --- Delete Modal Logic ---
+    function toggleDeleteModal(show: boolean) {
+        if (!deleteModal || !deleteModalBackdrop || !deleteModalPanel) return;
+
+        if (show) {
+            deleteModal.classList.remove('hidden');
+            setTimeout(() => {
+                deleteModalBackdrop.classList.remove('opacity-0');
+                deleteModalPanel.classList.remove('opacity-0', 'translate-y-4', 'sm:translate-y-0', 'sm:scale-95');
+                deleteModalPanel.classList.add('translate-y-0', 'sm:scale-100', 'opacity-100');
+            }, 10);
+        } else {
+            deleteModalBackdrop.classList.add('opacity-0');
+            deleteModalPanel.classList.remove('translate-y-0', 'sm:scale-100', 'opacity-100');
+            deleteModalPanel.classList.add('opacity-0', 'translate-y-4', 'sm:translate-y-0', 'sm:scale-95');
+
+            setTimeout(() => {
+                deleteModal.classList.add('hidden');
+                idToDelete = null; // Reset ID
+            }, 300);
+        }
+    }
+
+    cancelDeleteBtn?.addEventListener('click', () => toggleDeleteModal(false));
+    deleteModalBackdrop?.addEventListener('click', () => toggleDeleteModal(false));
+
+    confirmDeleteBtn?.addEventListener('click', async () => {
+        if (idToDelete) {
+            await deleteAnimal(idToDelete);
+            toggleDeleteModal(false);
+        }
+    });
 
 
     // --- Add Animal Logic ---
@@ -264,9 +306,10 @@ export function init() {
             const deleteBtn = target.closest('.delete');
 
             if (deleteBtn) {
-                if (confirm('Yakin hapus data ini?')) {
-                    const id = deleteBtn.getAttribute('data-id');
-                    if (id) await deleteAnimal(id);
+                const id = deleteBtn.getAttribute('data-id');
+                if (id) {
+                    idToDelete = id;
+                    toggleDeleteModal(true);
                 }
             }
         });
@@ -308,6 +351,7 @@ export function init() {
             if (row) row.remove();
 
             // Optional: Re-fetch if list becomes empty?
+            showToast('Data berhasil dihapus', 'success');
         } catch (e) {
             showToast('Gagal menghapus', 'error');
             console.error(e);
