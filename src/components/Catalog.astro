@@ -2,25 +2,45 @@
 import { db } from "../lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 
-// Fetch catalog subtitle from hero content
+// Get Language from cookie (Server Side)
+const lang = Astro.cookies.get("app_lang")?.value || "id";
+
+// Default Data (Fallback)
+let catalogTitle = "Katalog Hewan Qurban";
 let catalogSubtitle =
   "Pilih hewan qurban terbaik Anda. Harga sudah termasuk biaya perawatan dan pengantaran (area terjangkau).";
+
+if (lang === "en") {
+  catalogTitle = "Qurban Animals Catalog";
+  catalogSubtitle =
+    "Choose your best qurban animal. Price includes maintenance and delivery (affordable areas).";
+}
 
 try {
   const heroSnap = await getDoc(doc(db, "content", "hero"));
   if (heroSnap.exists()) {
     const data = heroSnap.data();
-    catalogSubtitle = data.catalogSubtitle || catalogSubtitle;
+
+    // Helper to get localized value
+    const getVal = (key: string) => {
+      if (lang === "en") {
+        return data[`${key}_en`] || data[`${key}_id`] || data[key];
+      }
+      return data[`${key}_id`] || data[key];
+    };
+
+    catalogTitle = getVal("catalogTitle") || catalogTitle;
+    catalogSubtitle = getVal("catalogSubtitle") || catalogSubtitle;
   }
 } catch (error) {
-  console.error("Error fetching catalog subtitle:", error);
+  console.error("Error fetching catalog content:", error);
 }
 ---
 
 <section id="catalog" class="catalog">
   <div class="container">
     <div class="section-header">
-      <h2 class="section-title">Katalog Hewan Qurban</h2>
+      <h2 class="section-title">{catalogTitle}</h2>
       <p class="section-subtitle">
         {catalogSubtitle}
       </p>
@@ -92,6 +112,93 @@ try {
   </div>
 </section>
 
+<!-- Product Detail Modal -->
+<div
+  id="product-modal"
+  class="modal-backdrop hidden"
+  role="dialog"
+  aria-modal="true"
+>
+  <div class="modal-container">
+    <button id="modal-close" class="modal-close-btn" aria-label="Close modal">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        ><line x1="18" y1="6" x2="6" y2="18"></line><line
+          x1="6"
+          y1="6"
+          x2="18"
+          y2="18"></line></svg
+      >
+    </button>
+
+    <div class="modal-content">
+      <!-- Image Side -->
+      <div class="modal-image-wrapper">
+        <img id="modal-img" src="" alt="" class="modal-img" />
+        <div id="modal-sold-overlay" class="sold-overlay hidden">
+          <span>TERJUAL</span>
+        </div>
+      </div>
+
+      <!-- Details Side -->
+      <div class="modal-details">
+        <div class="modal-header">
+          <h3 id="modal-title" class="modal-title"></h3>
+          <div class="modal-price-wrapper">
+            <span class="modal-price-label">Harga Spesial</span>
+            <span id="modal-price" class="modal-price"></span>
+          </div>
+        </div>
+
+        <div class="modal-body">
+          <p id="modal-desc" class="modal-desc"></p>
+
+          <div class="modal-meta">
+            <div class="meta-item">
+              <span class="meta-icon">⚖️</span>
+              <span class="meta-label">Berat:</span>
+              <span id="modal-weight-text" class="meta-value"></span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-icon">🏷️</span>
+              <span class="meta-label">Jenis:</span>
+              <span id="modal-type-text" class="meta-value"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer" id="modal-footer">
+          <a
+            id="modal-campaign-btn"
+            href="#"
+            target="_blank"
+            class="btn btn-campaign hidden"
+          >
+            Beli Sekarang
+          </a>
+          <a
+            id="modal-wa-btn"
+            href="#"
+            target="_blank"
+            class="btn btn-whatsapp full-width"
+          >
+            <i class="fab fa-whatsapp btn-icon-fa"></i>
+            <span>Pesan via WhatsApp</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   import { db } from "../lib/firebase";
   import {
@@ -105,6 +212,26 @@ try {
     type QueryDocumentSnapshot,
     type DocumentData,
   } from "firebase/firestore";
+
+  // Global interface for settings
+  declare global {
+    interface Window {
+      catalogSettings: any;
+      openProductModal: (
+        animal: any,
+        formattedPrice: string,
+        waUrl: string,
+      ) => void;
+    }
+  }
+
+  // Helper: Get Cookie
+  const getCookie = (name: string) => {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop()?.split(";").shift();
+    return "id";
+  };
 
   let lastVisible: QueryDocumentSnapshot<DocumentData> | null = null;
   const PAGE_SIZE = 9;
@@ -237,12 +364,6 @@ try {
       }
 
       // Get Language
-      const getCookie = (name: string) => {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop()?.split(";").shift();
-        return "id";
-      };
       const lang = getCookie("app_lang") || "id";
 
       animalsSnap.forEach((doc) => {
@@ -371,7 +492,8 @@ try {
                     <a href="${animal.urlCampaign}" 
                        class="btn btn-campaign"
                        target="_blank"
-                       rel="noopener noreferrer">
+                       rel="noopener noreferrer"
+                       onclick="event.stopPropagation()">
                        Beli Sekarang
                     </a>
                  `
@@ -382,7 +504,8 @@ try {
                     ${!isAvailable ? "disabled" : ""}
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label="Chat WhatsApp">
+                    aria-label="Chat WhatsApp"
+                    onclick="event.stopPropagation()">
                                           ${
                                             animal.urlCampaign
                                               ? waIcon
@@ -393,6 +516,14 @@ try {
                         </a>
              </div>
         `;
+        // Attach click listener for modal
+        card.addEventListener("click", () => {
+          if (window.openProductModal) {
+            window.openProductModal(animal, formattedPrice, waUrl);
+          }
+        });
+
+        card.style.cursor = "pointer";
 
         grid.appendChild(card);
       });
@@ -466,14 +597,165 @@ try {
         }
       });
     }
-  });
 
-  // Global interface for settings (optional, keeps TS happy if strict)
-  declare global {
-    interface Window {
-      catalogSettings: any;
+    // --- Modal Logic ---
+    const modal = document.getElementById("product-modal");
+    const closeBtn = document.getElementById("modal-close");
+    const modalBackdrop = document.querySelector(".modal-backdrop");
+
+    // Close Modal
+    function closeModal() {
+      if (modal) {
+        modal.classList.remove("active");
+        setTimeout(() => {
+          modal.classList.add("hidden");
+        }, 300); // Wait for transition
+        document.body.style.overflow = ""; // Restore scroll
+      }
     }
-  }
+
+    if (closeBtn) {
+      closeBtn.addEventListener("click", closeModal);
+    }
+
+    // Click outside
+    if (modal) {
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) closeModal();
+      });
+
+      // Escape key
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && modal.classList.contains("active")) {
+          closeModal();
+        }
+      });
+    }
+
+    // Open Modal Function (Global or attached via event)
+    (window as any).openProductModal = (
+      animal: any,
+      formattedPrice: string,
+      waUrl: string,
+    ) => {
+      if (!modal) {
+        return;
+      }
+
+      const lang = getCookie("app_lang") || "id";
+
+      // Populate Data
+      const img = document.getElementById("modal-img") as HTMLImageElement;
+      const title = document.getElementById("modal-title");
+      const price = document.getElementById("modal-price");
+      const desc = document.getElementById("modal-desc");
+      const type = document.getElementById("modal-type");
+      const weight = document.getElementById("modal-weight");
+      const weightText = document.getElementById("modal-weight-text");
+      const typeText = document.getElementById("modal-type-text");
+      const soldOverlay = document.getElementById("modal-sold-overlay");
+      const waBtn = document.getElementById(
+        "modal-wa-btn",
+      ) as HTMLAnchorElement;
+      const campaignBtn = document.getElementById(
+        "modal-campaign-btn",
+      ) as HTMLAnchorElement;
+      const modalFooter = document.getElementById("modal-footer");
+
+      // Determine content based on Lang
+      const name =
+        (lang === "en" ? animal.name_en : animal.name) || animal.name;
+      const description =
+        (lang === "en" ? animal.description_en : animal.description) ||
+        animal.description ||
+        (lang === "en"
+          ? "Quality qurban animal, healthy and according to sharia."
+          : "Hewan qurban berkualitas, sehat dan sesuai syariat.");
+
+      if (img)
+        img.src =
+          animal.imageUrl ||
+          `https://placehold.co/400x300/e2e8f0/1e293b?text=${encodeURIComponent(name)}`;
+      if (title) title.textContent = name;
+      if (price) price.textContent = formattedPrice;
+      if (desc) desc.textContent = description;
+
+      if (type) {
+        type.textContent = animal.type;
+        type.className = `badge-pill ${animal.type === "Sapi" ? "badge-cow" : "badge-goat"}`;
+      }
+      if (typeText) typeText.textContent = animal.type;
+
+      if (weight) {
+        weight.innerHTML = `
+           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z"></path></svg>
+           ${animal.weight} Kg
+        `;
+      }
+      if (weightText) weightText.textContent = `${animal.weight} Kg`;
+
+      if (soldOverlay) {
+        if (animal.available === false) soldOverlay.classList.remove("hidden");
+        else soldOverlay.classList.add("hidden");
+      }
+
+      // Button Logic
+      if (campaignBtn) {
+        if (animal.urlCampaign) {
+          campaignBtn.href = animal.urlCampaign;
+          campaignBtn.classList.remove("hidden");
+        } else {
+          campaignBtn.classList.add("hidden");
+        }
+      }
+
+      if (waBtn) {
+        waBtn.href = waUrl;
+
+        // Reset classes
+        waBtn.className = "btn btn-whatsapp";
+
+        if (animal.available === false) {
+          waBtn.classList.add("btn-disabled", "full-width");
+          waBtn.style.pointerEvents = "none";
+          waBtn.textContent = lang === "en" ? "Sold Out" : "Habis Terjual";
+        } else {
+          waBtn.classList.remove("btn-disabled");
+          waBtn.style.pointerEvents = "auto";
+
+          if (animal.urlCampaign) {
+            // Icon only if campaign button exists
+            waBtn.classList.add("icon-only");
+            waBtn.innerHTML = `<i class="fab fa-whatsapp btn-icon-fa"></i>`;
+          } else {
+            // Full width if no campaign button
+            waBtn.classList.add("full-width");
+            waBtn.innerHTML = `<i class="fab fa-whatsapp btn-icon-fa"></i> <span>${lang === "en" ? "Order on WhatsApp" : "Pesan via WhatsApp"}</span>`;
+          }
+        }
+      }
+
+      // Update Footer Grid Layout if needed
+      if (modalFooter) {
+        if (animal.urlCampaign && animal.available !== false) {
+          modalFooter.style.display = "grid";
+          modalFooter.style.gridTemplateColumns = "10fr 2fr";
+          modalFooter.style.gap = "0.5rem";
+        } else {
+          modalFooter.style.display = "flex";
+          modalFooter.style.gap = "0.75rem";
+        }
+      }
+
+      // Show
+      modal.classList.remove("hidden");
+      // Small delay for CSS transition
+      requestAnimationFrame(() => {
+        modal.classList.add("active");
+      });
+      document.body.style.overflow = "hidden"; // Lock scroll
+    };
+  });
 </script>
 
 <style>
@@ -804,7 +1086,8 @@ try {
     align-items: center;
   }
 
-  .animal-grid :global(.btn-campaign) {
+  .animal-grid :global(.btn-campaign),
+  .modal-container :global(.btn-campaign) {
     background-color: var(--color-primary);
     color: white;
     padding: 0.75rem 1rem; /* Smaller padding */
@@ -821,20 +1104,22 @@ try {
     flex: 1; /* Take remaining space */
   }
 
-  .animal-grid :global(.btn-campaign:hover) {
+  .animal-grid :global(.btn-campaign:hover),
+  .modal-container :global(.btn-campaign:hover) {
     background-color: var(--color-primary-dark);
     transform: translateY(-2px);
     box-shadow: 0 8px 15px -3px rgba(0, 0, 0, 0.15);
   }
 
-  .animal-grid :global(.btn-whatsapp) {
+  .animal-grid :global(.btn-whatsapp),
+  .modal-container :global(.btn-whatsapp) {
     background-color: white; /* Changed to White */
     color: #25d366; /* Green Text */
     font-weight: 700;
     border-radius: 0.75rem;
     text-decoration: none;
     transition: all 0.3s ease;
-    border: 1px solid #25d366; /* Green Border */
+    border: 1px solid #25d366; /* Green */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -843,25 +1128,29 @@ try {
     box-shadow: 0 4px 6px -1px rgba(37, 211, 102, 0.1);
   }
 
-  .animal-grid :global(.btn-whatsapp:hover) {
+  .animal-grid :global(.btn-whatsapp:hover),
+  .modal-container :global(.btn-whatsapp:hover) {
     background-color: #f0fdf4; /* Very light green */
     transform: translateY(-2px);
     box-shadow: 0 8px 15px -3px rgba(37, 211, 102, 0.2);
   }
 
   /* SVG icon style for full width button */
-  .animal-grid :global(.btn-whatsapp .btn-icon) {
+  .animal-grid :global(.btn-whatsapp .btn-icon),
+  .modal-container :global(.btn-whatsapp .btn-icon) {
     margin-right: 0.5rem;
     color: #25d366;
   }
 
   /* Font Awesome Icon Styles */
-  .animal-grid :global(.btn-icon-fa) {
+  .animal-grid :global(.btn-icon-fa),
+  .modal-container :global(.btn-icon-fa) {
     font-size: 1.5rem; /* Default size for full width */
     transition: all 0.3s ease;
   }
 
-  .animal-grid :global(.btn-whatsapp.icon-only .btn-icon-fa) {
+  .animal-grid :global(.btn-whatsapp.icon-only .btn-icon-fa),
+  .modal-container :global(.btn-whatsapp.icon-only .btn-icon-fa) {
     font-size: 2rem; /* Initial size */
     color: #25d366; /* Green Color for white button */
     display: block;
@@ -869,7 +1158,8 @@ try {
   }
 
   /* Specific styles for icon-only button (when campaign url exists) */
-  .animal-grid :global(.btn-whatsapp.icon-only) {
+  .animal-grid :global(.btn-whatsapp.icon-only),
+  .modal-container :global(.btn-whatsapp.icon-only) {
     width: 3.5rem;
     height: 3.5rem;
     padding: 0;
@@ -883,24 +1173,28 @@ try {
     justify-content: center;
   }
 
-  .animal-grid :global(.btn-whatsapp.icon-only:hover .btn-icon-fa) {
+  .animal-grid :global(.btn-whatsapp.icon-only:hover .btn-icon-fa),
+  .modal-container :global(.btn-whatsapp.icon-only:hover .btn-icon-fa) {
     transform: scale(1.1);
   }
 
-  .animal-grid :global(.btn-whatsapp.icon-only:hover) {
+  .animal-grid :global(.btn-whatsapp.icon-only:hover),
+  .modal-container :global(.btn-whatsapp.icon-only:hover) {
     background-color: #f0fdf4;
     transform: translateY(-2px);
     box-shadow: 0 8px 15px -3px rgba(37, 211, 102, 0.3);
   }
 
   /* Specific styles for full button (when no campaign url) */
-  .animal-grid :global(.btn-whatsapp.full-width .btn-icon-fa) {
+  .animal-grid :global(.btn-whatsapp.full-width .btn-icon-fa),
+  .modal-container :global(.btn-whatsapp.full-width .btn-icon-fa) {
     margin-right: 0.5rem;
     color: #25d366;
   }
 
   /* Specific styles for full button (when no campaign url) */
-  .animal-grid :global(.btn-whatsapp.full-width) {
+  .animal-grid :global(.btn-whatsapp.full-width),
+  .modal-container :global(.btn-whatsapp.full-width) {
     width: 100%;
     padding: 0.75rem 1rem;
     font-size: 0.9rem;
@@ -960,5 +1254,202 @@ try {
   .animal-grid :global(.btn-disabled:hover) {
     transform: none;
     box-shadow: none;
+  }
+
+  /* --- Product Detail Modal CSS --- */
+  .modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .modal-backdrop.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .modal-container {
+    background: white;
+    width: 100%;
+    max-width: 900px;
+    border-radius: 1.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    position: relative;
+    transform: scale(0.95) translateY(20px);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-backdrop.active .modal-container {
+    transform: scale(1) translateY(0);
+  }
+
+  .modal-close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 20;
+    background: white;
+    border: none;
+    border-radius: 50%;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    color: var(--color-text-muted);
+    transition: all 0.2s ease;
+  }
+
+  .modal-close-btn:hover {
+    background-color: #f1f5f9;
+    color: var(--color-danger);
+    transform: rotate(90deg);
+  }
+
+  .modal-content {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 768px) {
+    .modal-content {
+      grid-template-columns: 1.2fr 1fr;
+    }
+  }
+
+  /* Image Side */
+  .modal-image-wrapper {
+    position: relative;
+    height: 300px;
+    background-color: #f8fafc;
+    overflow: hidden;
+  }
+
+  @media (min-width: 768px) {
+    .modal-image-wrapper {
+      height: 100%;
+      min-height: 450px;
+    }
+  }
+
+  .modal-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .modal-badges {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  /* Details Side */
+  .modal-details {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+
+  .modal-header {
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 1rem;
+  }
+
+  .modal-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--color-text);
+    margin: 0 0 0.5rem;
+    font-family: var(--font-serif);
+    line-height: 1.2;
+  }
+
+  .modal-price-wrapper {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .modal-price-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    font-weight: 600;
+  }
+
+  .modal-price {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--color-secondary);
+  }
+
+  .modal-body {
+    flex-grow: 1;
+  }
+
+  .modal-desc {
+    color: var(--color-text-muted);
+    line-height: 1.7;
+    margin-bottom: 2rem;
+  }
+
+  .modal-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    background: #f8fafc;
+    padding: 1rem;
+    border-radius: 1rem;
+  }
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .meta-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .meta-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    font-weight: 700;
+  }
+
+  .meta-value {
+    font-weight: 700;
+    color: var(--color-text);
+  }
+
+  .modal-footer {
+    margin-top: auto;
   }
 </style>
