@@ -26,9 +26,19 @@ try {
     <div class="nav-menu" id="nav-menu">
       <ul class="nav-links">
         <li><a href="/" class="nav-link">Beranda</a></li>
-        <li><a href="/#catalog" class="nav-link">Katalog</a></li>
-        <li><a href="#sedekah-daging" class="nav-link">Sedekah Daging</a></li>
-        <li><a href="#how-to-buy" class="nav-link">Cara Pemesanan</a></li>
+        <li>
+          <a href="/#catalog" id="catalog-link" class="nav-link">Katalog</a>
+        </li>
+        <li>
+          <a href="#sedekah-daging" id="sedekah-daging-link" class="nav-link"
+            >Sedekah Daging</a
+          >
+        </li>
+        <li>
+          <a href="#how-to-buy" id="how-to-buy-link" class="nav-link"
+            >Cara Pemesanan</a
+          >
+        </li>
       </ul>
     </div>
 
@@ -100,9 +110,73 @@ try {
     });
   }
 
+  // Smooth Scroll Logic
+  function initSmoothScroll() {
+    const mobileBtn = document.getElementById("mobile-menu-btn");
+    const navMenu = document.getElementById("nav-menu");
+
+    const links = [
+      { id: "catalog-link", targetId: "catalog" },
+      { id: "sedekah-daging-link", targetId: "sedekah-daging" },
+      { id: "how-to-buy-link", targetId: "how-to-buy" },
+    ];
+
+    // Helper function to scroll
+    function scrollToSection(sectionId: string) {
+      const section = document.getElementById(sectionId);
+      if (section) {
+        const navbarHeight = 80; // Approximate height
+        const elementPosition =
+          section.getBoundingClientRect().top + window.scrollY;
+        const offsetPosition = elementPosition - navbarHeight;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth",
+        });
+
+        // Close menu
+        mobileBtn?.classList.remove("active");
+        navMenu?.classList.remove("active");
+      }
+    }
+
+    links.forEach(({ id, targetId }) => {
+      const link = document.getElementById(id);
+      if (link) {
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+
+          // Check if we are on the homepage
+          if (
+            window.location.pathname === "/" ||
+            window.location.pathname === ""
+          ) {
+            scrollToSection(targetId);
+          } else {
+            // Not on homepage, navigate to it with a flag
+            sessionStorage.setItem("scrollToSection", targetId);
+            window.location.href = "/";
+          }
+        });
+      }
+    });
+
+    // Check if we need to scroll after navigation
+    const targetSection = sessionStorage.getItem("scrollToSection");
+    if (targetSection) {
+      sessionStorage.removeItem("scrollToSection");
+      // Small delay to ensure DOM is ready
+      setTimeout(() => {
+        scrollToSection(targetSection);
+      }, 100);
+    }
+  }
+
   // Init on load and after navigation
   document.addEventListener("astro:page-load", () => {
     initLangSwitcher();
+    initSmoothScroll();
 
     const mobileBtn = document.getElementById("mobile-menu-btn");
     const navMenu = document.getElementById("nav-menu");

@@ -62,8 +62,14 @@ try {
         {heroData.description}
       </p>
       <div class="hero-actions">
-        <a href="#catalog" class="btn btn-primary">Lihat Katalog</a>
-        <a href="#how-to-buy" class="btn btn-secondary-white">Cara Pemesanan</a>
+        <a href="#catalog" id="hero-catalog-btn" class="btn btn-primary"
+          >Lihat Katalog</a
+        >
+        <a
+          href="#how-to-buy"
+          id="hero-how-to-buy-btn"
+          class="btn btn-secondary-white">Cara Pemesanan</a
+        >
       </div>
 
       <div class="hero-trust">
@@ -79,6 +85,51 @@ try {
     </div>
   </div>
 </section>
+
+<script>
+  function initHeroSmoothScroll() {
+    const links = [
+      { id: "hero-catalog-btn", targetId: "catalog" },
+      { id: "hero-how-to-buy-btn", targetId: "how-to-buy" },
+    ];
+
+    function scrollToSection(sectionId: string) {
+      const section = document.getElementById(sectionId);
+      if (section) {
+        const navbarHeight = 80;
+        const elementPosition =
+          section.getBoundingClientRect().top + window.scrollY;
+        const offsetPosition = elementPosition - navbarHeight;
+
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: "smooth",
+        });
+      }
+    }
+
+    links.forEach(({ id, targetId }) => {
+      const link = document.getElementById(id);
+      if (link) {
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+
+          if (
+            window.location.pathname === "/" ||
+            window.location.pathname === ""
+          ) {
+            scrollToSection(targetId);
+          } else {
+            sessionStorage.setItem("scrollToSection", targetId);
+            window.location.href = "/";
+          }
+        });
+      }
+    });
+  }
+
+  document.addEventListener("astro:page-load", initHeroSmoothScroll);
+</script>
 
 <style>
   .hero {
