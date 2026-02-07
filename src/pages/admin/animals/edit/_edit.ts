@@ -22,6 +22,7 @@ if (!idInput) {
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 (document.getElementById('name') as HTMLInputElement).value = data.name;
+                (document.getElementById('name_en') as HTMLInputElement).value = data.name_en || '';
                 (document.getElementById('type') as HTMLInputElement).value = data.type;
                 (document.getElementById('price') as HTMLInputElement).value = data.price;
                 (document.getElementById('weight') as HTMLInputElement).value = data.weight;
@@ -29,6 +30,7 @@ if (!idInput) {
                 (document.getElementById('urlCampaign') as HTMLInputElement).value = data.urlCampaign || '';
                 (document.getElementById('imageUrl') as HTMLInputElement).value = data.imageUrl || '';
                 (document.getElementById('description') as HTMLTextAreaElement).value = data.description || '';
+                (document.getElementById('description_en') as HTMLTextAreaElement).value = data.description_en || '';
 
                 loading.style.display = 'none';
                 form.classList.remove('hidden');
@@ -63,6 +65,7 @@ if (!idInput) {
 
             const data = {
                 name: (document.getElementById('name') as HTMLInputElement).value,
+                name_en: (document.getElementById('name_en') as HTMLInputElement).value || "",
                 type: (document.getElementById('type') as HTMLInputElement).value,
                 price: Number((document.getElementById('price') as HTMLInputElement).value),
                 weight: Number((document.getElementById('weight') as HTMLInputElement).value),
@@ -70,6 +73,7 @@ if (!idInput) {
                 urlCampaign: (document.getElementById('urlCampaign') as HTMLInputElement).value || null,
                 imageUrl: (document.getElementById('imageUrl') as HTMLInputElement).value,
                 description: (document.getElementById('description') as HTMLTextAreaElement).value,
+                description_en: (document.getElementById('description_en') as HTMLTextAreaElement).value || "",
                 updatedAt: new Date()
             };
 

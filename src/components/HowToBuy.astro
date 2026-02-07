@@ -31,10 +31,30 @@ let howToData = {
 
 try {
   const docSnap = await getDoc(doc(db, "content", "how_to"));
+  const lang = Astro.cookies.get("app_lang")?.value || "id";
+
   if (docSnap.exists()) {
     const data = docSnap.data();
-    howToData.subtitle = data.subtitle || howToData.subtitle;
-    howToData.steps = data.steps || howToData.steps;
+
+    // Localize Subtitle
+    if (lang === "en") {
+      howToData.subtitle =
+        data.subtitle_en || data.subtitle || howToData.subtitle;
+    } else {
+      howToData.subtitle = data.subtitle || howToData.subtitle;
+    }
+
+    // Localize Steps
+    const rawSteps = data.steps || [];
+    if (rawSteps.length > 0) {
+      howToData.steps = rawSteps.map((step: any) => ({
+        title: lang === "en" ? step.title_en || step.title : step.title,
+        description:
+          lang === "en"
+            ? step.description_en || step.description
+            : step.description,
+      }));
+    }
   }
 } catch (error) {
   console.error("Error fetching how-to data:", error);

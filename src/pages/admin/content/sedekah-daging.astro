@@ -12,76 +12,149 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
         </p>
 
         <form id="sedekah-form" class="space-y-6 max-w-2xl">
-            <div>
-                <label
-                    for="badge"
-                    class="block text-sm font-medium text-gray-700 mb-1"
-                >
-                    Badge Text
-                </label>
-                <input
-                    type="text"
-                    id="badge"
-                    name="badge"
-                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                    placeholder="Program Spesial"
-                />
+            <!-- Badge -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label
+                        for="badge"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Badge Text (ID)
+                    </label>
+                    <input
+                        type="text"
+                        id="badge"
+                        name="badge"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Program Spesial"
+                    />
+                </div>
+                <div>
+                    <label
+                        for="badge_en"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Badge Text (EN)
+                    </label>
+                    <input
+                        type="text"
+                        id="badge_en"
+                        name="badge_en"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Special Program"
+                    />
+                </div>
             </div>
 
-            <div>
-                <label
-                    for="title"
-                    class="block text-sm font-medium text-gray-700 mb-1"
-                >
-                    Title
-                </label>
-                <input
-                    type="text"
-                    id="title"
-                    name="title"
-                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                    placeholder="Sedekah Daging"
-                />
+            <!-- Title -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label
+                        for="title"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Title (ID)
+                    </label>
+                    <input
+                        type="text"
+                        id="title"
+                        name="title"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Sedekah Daging"
+                    />
+                </div>
+                <div>
+                    <label
+                        for="title_en"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Title (EN)
+                    </label>
+                    <input
+                        type="text"
+                        id="title_en"
+                        name="title_en"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Meat Alms"
+                    />
+                </div>
             </div>
 
-            <div>
-                <label
-                    for="titleHighlight"
-                    class="block text-sm font-medium text-gray-700 mb-1"
-                >
-                    Title Highlight
-                </label>
-                <input
-                    type="text"
-                    id="titleHighlight"
-                    name="titleHighlight"
-                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                    placeholder="Sebar Bahagia"
-                />
+            <!-- Title Highlight -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label
+                        for="titleHighlight"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Title Highlight (ID)
+                    </label>
+                    <input
+                        type="text"
+                        id="titleHighlight"
+                        name="titleHighlight"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Sebar Bahagia"
+                    />
+                </div>
+                <div>
+                    <label
+                        for="titleHighlight_en"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Title Highlight (EN)
+                    </label>
+                    <input
+                        type="text"
+                        id="titleHighlight_en"
+                        name="titleHighlight_en"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Spread Happiness"
+                    />
+                </div>
             </div>
 
-            <div>
-                <label
-                    for="description"
-                    class="block text-sm font-medium text-gray-700 mb-1"
-                >
-                    Description
-                </label>
-                <textarea
-                    id="description"
-                    name="description"
-                    rows="4"
-                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                    placeholder="Salurkan kebahagiaan Idul Adha..."></textarea>
+            <!-- Description -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label
+                        for="description"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Description (ID)
+                    </label>
+                    <textarea
+                        id="description"
+                        name="description"
+                        rows="4"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Salurkan kebahagiaan Idul Adha..."
+                    ></textarea>
+                </div>
+                <div>
+                    <label
+                        for="description_en"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Description (EN)
+                    </label>
+                    <textarea
+                        id="description_en"
+                        name="description_en"
+                        rows="4"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Distribute Eid Al-Adha happiness..."
+                    ></textarea>
+                </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label
                         for="buttonText"
                         class="block text-sm font-medium text-gray-700 mb-1"
                     >
-                        Button Text
+                        Button Text (ID)
                     </label>
                     <input
                         type="text"
@@ -89,6 +162,21 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
                         name="buttonText"
                         class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
                         placeholder="Ikut Sedekah Daging"
+                    />
+                </div>
+                <div>
+                    <label
+                        for="buttonText_en"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Button Text (EN)
+                    </label>
+                    <input
+                        type="text"
+                        id="buttonText_en"
+                        name="buttonText_en"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Join Meat Alms"
                     />
                 </div>
                 <div>
@@ -160,6 +248,8 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
     import { doc, getDoc, setDoc } from "firebase/firestore";
 
     const form = document.getElementById("sedekah-form") as HTMLFormElement;
+
+    // ID Inputs
     const badgeInput = document.getElementById("badge") as HTMLInputElement;
     const titleInput = document.getElementById("title") as HTMLInputElement;
     const titleHighlightInput = document.getElementById(
@@ -171,6 +261,24 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
     const buttonTextInput = document.getElementById(
         "buttonText",
     ) as HTMLInputElement;
+
+    // EN Inputs
+    const badgeEnInput = document.getElementById(
+        "badge_en",
+    ) as HTMLInputElement;
+    const titleEnInput = document.getElementById(
+        "title_en",
+    ) as HTMLInputElement;
+    const titleHighlightEnInput = document.getElementById(
+        "titleHighlight_en",
+    ) as HTMLInputElement;
+    const descriptionEnInput = document.getElementById(
+        "description_en",
+    ) as HTMLTextAreaElement;
+    const buttonTextEnInput = document.getElementById(
+        "buttonText_en",
+    ) as HTMLInputElement;
+
     const buttonUrlInput = document.getElementById(
         "buttonUrl",
     ) as HTMLInputElement;
@@ -180,7 +288,12 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
     const indicatorsContainer = document.getElementById("indicators-container");
     const addIndicatorBtn = document.getElementById("add-indicator-btn");
 
-    let trustIndicators: string[] = [];
+    interface Indicator {
+        id: string;
+        en: string;
+    }
+
+    let trustIndicators: Indicator[] = [];
 
     // Load data
     async function loadData() {
@@ -190,6 +303,8 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
 
             if (docSnap.exists()) {
                 const data = docSnap.data();
+
+                // Load ID
                 if (badgeInput) badgeInput.value = data.badge || "";
                 if (titleInput) titleInput.value = data.title || "";
                 if (titleHighlightInput)
@@ -200,7 +315,31 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
                     buttonTextInput.value = data.buttonText || "";
                 if (buttonUrlInput) buttonUrlInput.value = data.buttonUrl || "";
                 if (imageUrlInput) imageUrlInput.value = data.imageUrl || "";
-                trustIndicators = data.trustIndicators || [];
+
+                // Load EN
+                if (badgeEnInput) badgeEnInput.value = data.badge_en || "";
+                if (titleEnInput) titleEnInput.value = data.title_en || "";
+                if (titleHighlightEnInput)
+                    titleHighlightEnInput.value = data.titleHighlight_en || "";
+                if (descriptionEnInput)
+                    descriptionEnInput.value = data.description_en || "";
+                if (buttonTextEnInput)
+                    buttonTextEnInput.value = data.buttonText_en || "";
+
+                // Handle indicators migration
+                const rawIndicators = data.trustIndicators || [];
+                if (rawIndicators.length > 0) {
+                    if (typeof rawIndicators[0] === "string") {
+                        trustIndicators = rawIndicators.map((s: string) => ({
+                            id: s,
+                            en: "",
+                        }));
+                    } else {
+                        trustIndicators = rawIndicators;
+                    }
+                } else {
+                    trustIndicators = [];
+                }
             }
 
             renderIndicators();
@@ -216,19 +355,30 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
 
         trustIndicators.forEach((indicator, index) => {
             const div = document.createElement("div");
-            div.className = "flex gap-2 items-center";
+            div.className = "flex gap-2 items-start bg-gray-50 p-3 rounded-md";
             div.innerHTML = `
-                <input 
-                    type="text" 
-                    data-index="${index}"
-                    value="${indicator}"
-                    placeholder="e.g., Tepat Sasaran"
-                    class="indicator-input flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                />
+                <div class="flex-1 space-y-2">
+                    <input 
+                        type="text" 
+                        data-index="${index}"
+                        data-lang="id"
+                        value="${indicator.id}"
+                        placeholder="Indicator (ID)"
+                        class="indicator-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                    />
+                    <input 
+                        type="text" 
+                        data-index="${index}"
+                        data-lang="en"
+                        value="${indicator.en}"
+                        placeholder="Indicator (EN)"
+                        class="indicator-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                    />
+                </div>
                 <button 
                     type="button" 
                     data-index="${index}"
-                    class="remove-indicator-btn px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors"
+                    class="remove-indicator-btn px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors mt-1"
                 >
                     Remove
                 </button>
@@ -253,7 +403,11 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
     function handleIndicatorChange(e: Event) {
         const target = e.target as HTMLInputElement;
         const index = parseInt(target.dataset.index || "0");
-        trustIndicators[index] = target.value;
+        const lang = target.dataset.lang as "id" | "en";
+
+        if (trustIndicators[index]) {
+            trustIndicators[index][lang] = target.value;
+        }
     }
 
     function handleRemoveIndicator(e: Event) {
@@ -264,7 +418,7 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
     }
 
     addIndicatorBtn?.addEventListener("click", () => {
-        trustIndicators.push("");
+        trustIndicators.push({ id: "", en: "" });
         renderIndicators();
     });
 
@@ -284,9 +438,18 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
                 titleHighlight: titleHighlightInput.value,
                 description: descriptionInput.value,
                 buttonText: buttonTextInput.value,
+
+                badge_en: badgeEnInput.value,
+                title_en: titleEnInput.value,
+                titleHighlight_en: titleHighlightEnInput.value,
+                description_en: descriptionEnInput.value,
+                buttonText_en: buttonTextEnInput.value,
+
                 buttonUrl: buttonUrlInput.value,
                 imageUrl: imageUrlInput.value,
-                trustIndicators: trustIndicators.filter((f) => f.trim() !== ""),
+                trustIndicators: trustIndicators.filter(
+                    (f) => f.id.trim() !== "" || f.en.trim() !== "",
+                ),
                 updatedAt: new Date().toISOString(),
             };
 

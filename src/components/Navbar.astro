@@ -40,13 +40,6 @@ try {
         <button class="lang-btn" data-lang="en">EN</button>
       </div>
 
-      <!-- Hidden Google Widget Container (Visually hidden but exist for script) -->
-      <div
-        id="google_translate_element"
-        style="position: absolute; opacity: 0; width: 0; height: 0; overflow: hidden; pointer-events: none;"
-      >
-      </div>
-
       <button
         class="mobile-menu-btn"
         id="mobile-menu-btn"
@@ -65,15 +58,20 @@ try {
   function initLangSwitcher() {
     const buttons = document.querySelectorAll(".lang-btn");
 
-    // Check current cookie
-    const cookie = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("googtrans="));
-    const currentLang = cookie && cookie.includes("/en") ? "en" : "id";
+    // Helper to get cookie
+    const getCookie = (name: string) => {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop()?.split(";").shift();
+      return "id";
+    };
+
+    const currentLang = getCookie("app_lang") || "id";
 
     // Set Active State
     buttons.forEach((btn) => {
-      if (btn.getAttribute("data-lang") === currentLang) {
+      const btnLang = btn.getAttribute("data-lang");
+      if (btnLang === currentLang) {
         btn.classList.add("active");
         btn.classList.remove("text-slate-400");
       } else {
@@ -84,37 +82,19 @@ try {
       // Add Click Listener
       btn.addEventListener("click", () => {
         const lang = btn.getAttribute("data-lang");
+        if (lang) {
+          // Set cookie for 1 year
+          document.cookie = `app_lang=${lang}; path=/; max-age=31536000`;
 
-        // Google Translate Cookie Format: /source/target
-        // Using 'auto' for source is often more reliable
-        const cookieValue = `/auto/${lang}`;
-        const dom = window.location.hostname;
-
-        // Nuking existing cookies aggressively to ensure clean state
-        document.cookie =
-          "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-        document.cookie =
-          "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" +
-          dom;
-        document.cookie =
-          "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=." +
-          dom;
-
-        if (lang === "en") {
-          // Set for English
-          document.cookie = `googtrans=${cookieValue}; path=/`;
-          document.cookie = `googtrans=${cookieValue}; path=/; domain=${window.location.hostname}`;
-        } else {
-          // For ID, just clear it
+          // Clear old google translate cookies just in case
           document.cookie =
             "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
           document.cookie =
             "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" +
             window.location.hostname;
-        }
 
-        // Reload to apply
-        window.location.reload();
+          window.location.reload();
+        }
       });
     });
   }

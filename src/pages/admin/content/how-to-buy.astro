@@ -12,20 +12,37 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
         </p>
 
         <form id="how-to-buy-form" class="space-y-6 max-w-2xl">
-            <div>
-                <label
-                    for="subtitle"
-                    class="block text-sm font-medium text-gray-700 mb-1"
-                >
-                    Subtitle
-                </label>
-                <textarea
-                    id="subtitle"
-                    name="subtitle"
-                    rows="2"
-                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                    placeholder="Proses mudah dan transparan untuk kenyamanan ibadah Anda"
-                ></textarea>
+            <!-- Subtitle -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label
+                        for="subtitle"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Subtitle (ID)
+                    </label>
+                    <textarea
+                        id="subtitle"
+                        name="subtitle"
+                        rows="2"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Proses mudah dan transparan..."></textarea>
+                </div>
+                <div>
+                    <label
+                        for="subtitle_en"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Subtitle (EN)
+                    </label>
+                    <textarea
+                        id="subtitle_en"
+                        name="subtitle_en"
+                        rows="2"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Easy and transparent process..."
+                    ></textarea>
+                </div>
             </div>
 
             <div>
@@ -64,10 +81,20 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
     const subtitleInput = document.getElementById(
         "subtitle",
     ) as HTMLTextAreaElement;
+    const subtitleEnInput = document.getElementById(
+        "subtitle_en",
+    ) as HTMLTextAreaElement;
     const stepsContainer = document.getElementById("steps-container");
     const addStepBtn = document.getElementById("add-step-btn");
 
-    let steps: Array<{ title: string; description: string }> = [];
+    interface Step {
+        title: string;
+        title_en: string;
+        description: string;
+        description_en: string;
+    }
+
+    let steps: Step[] = [];
 
     // Load data
     async function loadData() {
@@ -78,7 +105,26 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 if (subtitleInput) subtitleInput.value = data.subtitle || "";
-                steps = data.steps || [];
+                if (subtitleEnInput)
+                    subtitleEnInput.value = data.subtitle_en || "";
+
+                // Migration logic
+                const rawSteps = data.steps || [];
+                if (rawSteps.length > 0) {
+                    // Check if first item has title_en, if not, it's legacy
+                    if (rawSteps[0].title_en === undefined) {
+                        steps = rawSteps.map((s: any) => ({
+                            title: s.title || "",
+                            title_en: "",
+                            description: s.description || "",
+                            description_en: "",
+                        }));
+                    } else {
+                        steps = rawSteps;
+                    }
+                } else {
+                    steps = [];
+                }
             }
 
             renderSteps();
@@ -107,27 +153,55 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
                         Remove
                     </button>
                 </div>
-                <div class="space-y-3">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                        <input 
-                            type="text" 
-                            data-index="${index}" 
-                            data-field="title"
-                            value="${step.title}"
-                            placeholder="e.g., Pilih Hewan"
-                            class="step-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                        />
+                <div class="space-y-4">
+                    <!-- Title -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Title (ID)</label>
+                            <input 
+                                type="text" 
+                                data-index="${index}" 
+                                data-field="title"
+                                value="${step.title}"
+                                placeholder="e.g., Pilih Hewan"
+                                class="step-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                            />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Title (EN)</label>
+                            <input 
+                                type="text" 
+                                data-index="${index}" 
+                                data-field="title_en"
+                                value="${step.title_en}"
+                                placeholder="e.g., Choose Animal"
+                                class="step-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                            />
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                        <textarea 
-                            data-index="${index}" 
-                            data-field="description"
-                            rows="2"
-                            placeholder="Describe this step..."
-                            class="step-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                        >${step.description}</textarea>
+
+                    <!-- Description -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Description (ID)</label>
+                            <textarea 
+                                data-index="${index}" 
+                                data-field="description"
+                                rows="2"
+                                placeholder="Describe this step..."
+                                class="step-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                            >${step.description}</textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Description (EN)</label>
+                            <textarea 
+                                data-index="${index}" 
+                                data-field="description_en"
+                                rows="2"
+                                placeholder="Describe this step..."
+                                class="step-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                            >${step.description_en}</textarea>
+                        </div>
                     </div>
                 </div>
             `;
@@ -147,7 +221,11 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
     function handleStepChange(e: Event) {
         const target = e.target as HTMLInputElement | HTMLTextAreaElement;
         const index = parseInt(target.dataset.index || "0");
-        const field = target.dataset.field as "title" | "description";
+        const field = target.dataset.field as
+            | "title"
+            | "title_en"
+            | "description"
+            | "description_en";
 
         if (steps[index]) {
             steps[index][field] = target.value;
@@ -162,7 +240,12 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
     }
 
     addStepBtn?.addEventListener("click", () => {
-        steps.push({ title: "", description: "" });
+        steps.push({
+            title: "",
+            title_en: "",
+            description: "",
+            description_en: "",
+        });
         renderSteps();
     });
 
@@ -178,6 +261,7 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
         try {
             const data = {
                 subtitle: subtitleInput.value,
+                subtitle_en: subtitleEnInput.value,
                 steps: steps,
                 updatedAt: new Date().toISOString(),
             };

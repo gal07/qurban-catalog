@@ -25,17 +25,23 @@ try {
     getDoc(doc(db, "content", "logo")),
   ]);
 
+  const lang = Astro.cookies.get("app_lang")?.value || "id";
+
   if (contactSnap.exists()) {
     const data = contactSnap.data();
-    footerData.address = data.address || footerData.address;
+    footerData.address =
+      (lang === "en" ? data.address_en : data.address) || footerData.address;
     footerData.phone = data.phone || footerData.phone;
     footerData.email = data.email || footerData.email;
   }
 
   if (footerSnap.exists()) {
     const data = footerSnap.data();
-    footerData.description = data.description || footerData.description;
-    footerData.bottom = data.bottom || footerData.bottom;
+    footerData.description =
+      (lang === "en" ? data.description_en : data.description) ||
+      footerData.description;
+    footerData.bottom =
+      (lang === "en" ? data.bottom_en : data.bottom) || footerData.bottom;
   }
 
   if (socialSnap.exists()) {

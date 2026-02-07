@@ -48,6 +48,7 @@ if (form) {
 
         const data = {
             name: (document.getElementById('name') as HTMLInputElement).value,
+            name_en: (document.getElementById('name_en') as HTMLInputElement).value || "",
             type: (document.getElementById('type') as HTMLInputElement).value,
             price: Number((document.getElementById('price') as HTMLInputElement).value),
             weight: Number((document.getElementById('weight') as HTMLInputElement).value),
@@ -55,6 +56,7 @@ if (form) {
             imageUrl: imageUrl,
             urlCampaign: (document.getElementById('urlCampaign') as HTMLInputElement).value || null,
             description: (document.getElementById('description') as HTMLTextAreaElement).value,
+            description_en: (document.getElementById('description_en') as HTMLTextAreaElement).value || "",
             createdAt: new Date(),
             updatedAt: new Date()
         };

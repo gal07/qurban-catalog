@@ -9,19 +9,34 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
     >
       <form id="animal-form" class="space-y-6">
         <!-- Name -->
-        <div>
-          <label
-            for="name"
-            class="block text-sm font-medium text-slate-700 mb-1"
-            >Nama Hewans</label
-          >
-          <input
-            type="text"
-            id="name"
-            required
-            placeholder="Contoh: Sapi Limosin AA"
-            class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm px-4 py-3 border"
-          />
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label
+              for="name"
+              class="block text-sm font-medium text-slate-700 mb-1"
+              >Nama Hewan (ID)</label
+            >
+            <input
+              type="text"
+              id="name"
+              required
+              placeholder="Contoh: Sapi Limosin AA"
+              class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm px-4 py-3 border"
+            />
+          </div>
+          <div>
+            <label
+              for="name_en"
+              class="block text-sm font-medium text-slate-700 mb-1"
+              >Animal Name (EN)</label
+            >
+            <input
+              type="text"
+              id="name_en"
+              placeholder="Example: Limousin Cow AA"
+              class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm px-4 py-3 border"
+            />
+          </div>
         </div>
 
         <!-- Campaign URL -->
@@ -174,18 +189,33 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
         </div>
 
         <!-- Description -->
-        <div>
-          <label
-            for="description"
-            class="block text-sm font-medium text-slate-700 mb-1"
-            >Deskripsi</label
-          >
-          <textarea
-            id="description"
-            rows="4"
-            placeholder="Deskripsi kondisi hewan..."
-            class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm px-4 py-3 border"
-          ></textarea>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label
+              for="description"
+              class="block text-sm font-medium text-slate-700 mb-1"
+              >Deskripsi (ID)</label
+            >
+            <textarea
+              id="description"
+              rows="4"
+              placeholder="Deskripsi kondisi hewan..."
+              class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm px-4 py-3 border"
+            ></textarea>
+          </div>
+          <div>
+            <label
+              for="description_en"
+              class="block text-sm font-medium text-slate-700 mb-1"
+              >Description (EN)</label
+            >
+            <textarea
+              id="description_en"
+              rows="4"
+              placeholder="Animal condition description..."
+              class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm px-4 py-3 border"
+            ></textarea>
+          </div>
         </div>
 
         <!-- Actions -->

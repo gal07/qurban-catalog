@@ -17,17 +17,39 @@ let content = {
 
 try {
     const docSnap = await getDoc(doc(db, "content", "sedekah_daging"));
+    const lang = Astro.cookies.get("app_lang")?.value || "id";
+
     if (docSnap.exists()) {
         const data = docSnap.data();
-        content.badge = data.badge || content.badge;
-        content.title = data.title || content.title;
-        content.titleHighlight = data.titleHighlight || content.titleHighlight;
-        content.description = data.description || content.description;
-        content.buttonText = data.buttonText || content.buttonText;
+
+        const getVal = (key: string) => {
+            if (lang === "en") {
+                return data[`${key}_en`] || data[key];
+            }
+            return data[key];
+        };
+
+        content.badge = getVal("badge") || content.badge;
+        content.title = getVal("title") || content.title;
+        content.titleHighlight =
+            getVal("titleHighlight") || content.titleHighlight;
+        content.description = getVal("description") || content.description;
+        content.buttonText = getVal("buttonText") || content.buttonText;
         content.buttonUrl = data.buttonUrl || content.buttonUrl;
         content.imageUrl = data.imageUrl || content.imageUrl;
-        content.trustIndicators =
-            data.trustIndicators || content.trustIndicators;
+
+        // Handle Trust Indicators
+        const rawIndicators = data.trustIndicators || [];
+        if (rawIndicators.length > 0) {
+            // Check if object (legacy migration check handled in admin, here we expect what's saved)
+            // If it is string (legacy), just use it. If object, use localized.
+            content.trustIndicators = rawIndicators
+                .map((ind: any) => {
+                    if (typeof ind === "string") return ind;
+                    return lang === "en" ? ind.en || ind.id : ind.id;
+                })
+                .filter((s: string) => s && s.trim() !== "");
+        }
     }
 } catch (error) {
     console.error("Error fetching sedekah daging data:", error);

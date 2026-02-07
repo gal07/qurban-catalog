@@ -236,9 +236,28 @@ try {
         grid.innerHTML = "";
       }
 
+      // Get Language
+      const getCookie = (name: string) => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop()?.split(";").shift();
+        return "id";
+      };
+      const lang = getCookie("app_lang") || "id";
+
       animalsSnap.forEach((doc) => {
         const animal = doc.data();
         const isAvailable = animal.available;
+
+        // Localized Data
+        const name =
+          (lang === "en" ? animal.name_en : animal.name) || animal.name;
+        const description =
+          (lang === "en" ? animal.description_en : animal.description) ||
+          animal.description ||
+          (lang === "en"
+            ? "Quality qurban animal, healthy and according to sharia."
+            : "Hewan qurban berkualitas, sehat dan sesuai syariat.");
 
         // Format Price
         const formattedPrice =
@@ -246,7 +265,7 @@ try {
 
         // Format WhatsApp Message
         let message = waTemplate
-          .replace(/{name}/g, animal.name)
+          .replace(/{name}/g, name)
           .replace(/{price}/g, formattedPrice);
 
         const waUrl = `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`;
@@ -263,13 +282,13 @@ try {
         // Image Logic
         const imageUrl =
           animal.imageUrl ||
-          `https://placehold.co/400x300/e2e8f0/1e293b?text=${encodeURIComponent(animal.name)}`;
+          `https://placehold.co/400x300/e2e8f0/1e293b?text=${encodeURIComponent(name)}`;
 
         // Re-using the HTML structure
         card.innerHTML = `
                 <div class="animal-card ${!isAvailable ? "sold-out" : ""}">
                     <div class="card-image-wrapper">
-                        <img src="${imageUrl}" alt="${animal.name}" loading="lazy" class="card-img" width="400" height="300" />
+                        <img src="${imageUrl}" alt="${name}" loading="lazy" class="card-img" width="400" height="300" />
                         ${!isAvailable ? '<div class="sold-overlay"><span>TERJUAL</span></div>' : ""}
                         <div class="card-badges">
                              <span class="badge-pill ${animal.type === "Sapi" ? "badge-cow" : "badge-goat"}">${animal.type}</span>
@@ -337,8 +356,8 @@ try {
                  </div>
              </div>
              <div class="card-content">
-                 <h3 class="card-title">${animal.name}</h3>
-                 <p class="card-desc">${animal.description || "Hewan qurban berkualitas, sehat dan sesuai syariat."}</p>
+                 <h3 class="card-title">${name}</h3>
+                 <p class="card-desc">${description}</p>
                  
                  <div class="card-pricing">
                      <span class="price-label">Harga Spesial</span>

@@ -12,19 +12,36 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
         </p>
 
         <form id="contact-form" class="space-y-6 max-w-lg">
-            <div>
-                <label
-                    for="address"
-                    class="block text-sm font-medium text-gray-700 mb-1"
-                >
-                    Alamat
-                </label>
-                <textarea
-                    id="address"
-                    name="address"
-                    rows="3"
-                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                    placeholder="Jl. Masjid Al-Huda No. 123..."></textarea>
+            <!-- Address -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label
+                        for="address"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Alamat (ID)
+                    </label>
+                    <textarea
+                        id="address"
+                        name="address"
+                        rows="3"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Jl. Masjid Al-Huda No. 123..."></textarea>
+                </div>
+                <div>
+                    <label
+                        for="address_en"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Address (EN)
+                    </label>
+                    <textarea
+                        id="address_en"
+                        name="address_en"
+                        rows="3"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="123 Al-Huda Mosque St..."></textarea>
+                </div>
             </div>
 
             <div>
@@ -79,6 +96,9 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
     const addressInput = document.getElementById(
         "address",
     ) as HTMLTextAreaElement;
+    const addressEnInput = document.getElementById(
+        "address_en",
+    ) as HTMLTextAreaElement;
     const phoneInput = document.getElementById("phone") as HTMLInputElement;
     const emailInput = document.getElementById("email") as HTMLInputElement;
 
@@ -91,6 +111,8 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 if (addressInput) addressInput.value = data.address || "";
+                if (addressEnInput)
+                    addressEnInput.value = data.address_en || "";
                 if (phoneInput) phoneInput.value = data.phone || "";
                 if (emailInput) emailInput.value = data.email || "";
             }
@@ -115,6 +137,7 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
         try {
             const data = {
                 address: addressInput.value,
+                address_en: addressEnInput.value,
                 phone: phoneInput.value,
                 email: emailInput.value,
                 updatedAt: new Date().toISOString(),
