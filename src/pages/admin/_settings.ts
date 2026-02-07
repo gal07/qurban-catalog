@@ -14,7 +14,8 @@ export function init() {
 
     const saveSettingsBtn = document.getElementById('save-settings-btn') as HTMLButtonElement;
     const waNumberInput = document.getElementById('wa-number') as HTMLInputElement;
-    const waTemplateInput = document.getElementById('wa-template') as HTMLTextAreaElement;
+    const waTemplateIdInput = document.getElementById('wa-template-id') as HTMLTextAreaElement;
+    const waTemplateEnInput = document.getElementById('wa-template-en') as HTMLTextAreaElement;
     let settingWaDocId: string | null = null;
 
     // --- Theme Settings ---
@@ -84,7 +85,8 @@ export function init() {
         if (!waNumberInput) return; // Guard
 
         waNumberInput.disabled = true;
-        waTemplateInput.disabled = true;
+        if (waTemplateIdInput) waTemplateIdInput.disabled = true;
+        if (waTemplateEnInput) waTemplateEnInput.disabled = true;
         if (saveSettingsBtn) saveSettingsBtn.disabled = true;
 
         try {
@@ -94,13 +96,21 @@ export function init() {
                 const data = docSnap.data();
                 settingWaDocId = docSnap.id;
                 waNumberInput.value = data.whatsappNumber || '';
-                waTemplateInput.value = data.messageTemplate || '';
+
+                if (waTemplateIdInput) {
+                    // Fallback: use messageTemplate if messageTemplate_id is empty
+                    waTemplateIdInput.value = data.messageTemplate_id || data.messageTemplate || '';
+                }
+                if (waTemplateEnInput) {
+                    waTemplateEnInput.value = data.messageTemplate_en || '';
+                }
             }
         } catch (e) {
             console.error("Error fetching WA settings:", e);
         } finally {
             waNumberInput.disabled = false;
-            waTemplateInput.disabled = false;
+            if (waTemplateIdInput) waTemplateIdInput.disabled = false;
+            if (waTemplateEnInput) waTemplateEnInput.disabled = false;
             if (saveSettingsBtn) saveSettingsBtn.disabled = false;
         }
     }
@@ -161,7 +171,10 @@ export function init() {
                 if (settingWaDocId) {
                     await updateDoc(doc(db, "setting_wa", settingWaDocId), {
                         whatsappNumber: waNumberInput.value,
-                        messageTemplate: waTemplateInput.value
+                        messageTemplate_id: waTemplateIdInput ? waTemplateIdInput.value : '',
+                        messageTemplate_en: waTemplateEnInput ? waTemplateEnInput.value : '',
+                        // Maintain legacy field for safety if needed
+                        messageTemplate: waTemplateIdInput ? waTemplateIdInput.value : ''
                     });
                 } else {
                     // Handle race condition if created elsewhere or double check
@@ -170,12 +183,16 @@ export function init() {
                         settingWaDocId = querySnapshot.docs[0].id;
                         await updateDoc(doc(db, "setting_wa", settingWaDocId), {
                             whatsappNumber: waNumberInput.value,
-                            messageTemplate: waTemplateInput.value
+                            messageTemplate_id: waTemplateIdInput ? waTemplateIdInput.value : '',
+                            messageTemplate_en: waTemplateEnInput ? waTemplateEnInput.value : '',
+                            messageTemplate: waTemplateIdInput ? waTemplateIdInput.value : ''
                         });
                     } else {
                         const docRef = await addDoc(collection(db, "setting_wa"), {
                             whatsappNumber: waNumberInput.value,
-                            messageTemplate: waTemplateInput.value
+                            messageTemplate_id: waTemplateIdInput ? waTemplateIdInput.value : '',
+                            messageTemplate_en: waTemplateEnInput ? waTemplateEnInput.value : '',
+                            messageTemplate: waTemplateIdInput ? waTemplateIdInput.value : ''
                         });
                         settingWaDocId = docRef.id;
                     }

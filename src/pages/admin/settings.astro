@@ -27,15 +27,15 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
           </p>
         </div>
 
-        <!-- Template Message -->
+        <!-- Template Message (ID) -->
         <div>
           <label
-            for="wa-template"
+            for="wa-template-id"
             class="block text-sm font-medium text-slate-700 mb-1"
-            >Pesan Default</label
+            >Pesan Default (Bahasa Indonesia)</label
           >
           <textarea
-            id="wa-template"
+            id="wa-template-id"
             rows="4"
             placeholder="Halo, saya tertarik dengan hewan qurban..."
             class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm px-4 py-3 border"
@@ -46,6 +46,28 @@ import AdminLayout from "../../layouts/AdminLayout.astro";
             > untuk nama hewan dan <code
               class="bg-slate-100 px-1 rounded text-slate-700">{"{price}"}</code
             > untuk harga.
+          </p>
+        </div>
+
+        <!-- Template Message (EN) -->
+        <div>
+          <label
+            for="wa-template-en"
+            class="block text-sm font-medium text-slate-700 mb-1"
+            >Pesan Default (English)</label
+          >
+          <textarea
+            id="wa-template-en"
+            rows="4"
+            placeholder="Hello, I am interested in qurban animal..."
+            class="block w-full rounded-lg border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm px-4 py-3 border"
+          ></textarea>
+          <p class="mt-1 text-xs text-slate-500">
+            Use <code class="bg-slate-100 px-1 rounded text-slate-700"
+              >{"{name}"}</code
+            > for animal name and <code
+              class="bg-slate-100 px-1 rounded text-slate-700">{"{price}"}</code
+            > for price.
           </p>
         </div>
 

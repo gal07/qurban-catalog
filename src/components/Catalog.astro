@@ -270,20 +270,29 @@ try {
       // Fetch settings once if not cached/stored (simplification: fetch every init load for now)
       // Ideally we fetch settings separately, but sticking to existing pattern
       let waNumber = "628123456789";
-      let waTemplate =
+      let waTemplateId =
         "Halo, saya tertarik dengan hewan qurban {name} seharga {price}. Apakah masih tersedia?";
+      let waTemplateEn =
+        "Hello, I am interested in qurban animal {name} price {price}. Is it available?";
 
       if (!isNextPage || !window.catalogSettings) {
         const settingsSnap = await getDocs(collection(db, "setting_wa"));
         if (!settingsSnap.empty) {
           const sData = settingsSnap.docs[0].data();
           if (sData.whatsappNumber) waNumber = sData.whatsappNumber;
-          if (sData.messageTemplate) waTemplate = sData.messageTemplate;
-          window.catalogSettings = { waNumber, waTemplate };
+          // ID Template (fallback to old field)
+          if (sData.messageTemplate_id) waTemplateId = sData.messageTemplate_id;
+          else if (sData.messageTemplate) waTemplateId = sData.messageTemplate;
+
+          // EN Template
+          if (sData.messageTemplate_en) waTemplateEn = sData.messageTemplate_en;
+
+          window.catalogSettings = { waNumber, waTemplateId, waTemplateEn };
         }
       } else {
         waNumber = window.catalogSettings.waNumber;
-        waTemplate = window.catalogSettings.waTemplate;
+        waTemplateId = window.catalogSettings.waTemplateId;
+        waTemplateEn = window.catalogSettings.waTemplateEn;
       }
 
       // Query Construction
@@ -392,6 +401,7 @@ try {
           "Rp " + Number(animal.price).toLocaleString("id-ID");
 
         // Format WhatsApp Message
+        const waTemplate = lang === "en" ? waTemplateEn : waTemplateId;
         let message = waTemplate
           .replace(/{name}/g, name)
           .replace(/{price}/g, formattedPrice);
