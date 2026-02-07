@@ -563,7 +563,13 @@ try {
   }
 
   // Initialize
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("astro:page-load", () => {
+    // Reset state if needed, but keeping global vars is risky if not reset.
+    // Ideally we reset them or ensure they are re-queried.
+    lastVisible = null;
+    isLoading = false;
+
+    // Initial Load
     loadCatalog(false);
 
     const loadMoreBtn = document.getElementById("btn-load-more");
@@ -638,131 +644,130 @@ try {
         }
       });
     }
+  });
 
-    // Open Modal Function (Global or attached via event)
-    (window as any).openProductModal = (
-      animal: any,
-      formattedPrice: string,
-      waUrl: string,
-    ) => {
-      if (!modal) {
-        return;
-      }
+  // Open Modal Function (Global or attached via event)
+  // Ensure we can access elements dynamically
+  (window as any).openProductModal = (
+    animal: Animal,
+    formattedPrice: string,
+    waUrl: string,
+  ) => {
+    const modal = document.getElementById("product-modal");
+    if (!modal) {
+      return;
+    }
 
-      const lang = getCookie("app_lang") || "id";
+    const lang = getCookie("app_lang") || "id";
 
-      // Populate Data
-      const img = document.getElementById("modal-img") as HTMLImageElement;
-      const title = document.getElementById("modal-title");
-      const price = document.getElementById("modal-price");
-      const desc = document.getElementById("modal-desc");
-      const type = document.getElementById("modal-type");
-      const weight = document.getElementById("modal-weight");
-      const weightText = document.getElementById("modal-weight-text");
-      const typeText = document.getElementById("modal-type-text");
-      const soldOverlay = document.getElementById("modal-sold-overlay");
-      const waBtn = document.getElementById(
-        "modal-wa-btn",
-      ) as HTMLAnchorElement;
-      const campaignBtn = document.getElementById(
-        "modal-campaign-btn",
-      ) as HTMLAnchorElement;
-      const modalFooter = document.getElementById("modal-footer");
+    // Populate Data
+    const img = document.getElementById("modal-img") as HTMLImageElement;
+    const title = document.getElementById("modal-title");
+    const price = document.getElementById("modal-price");
+    const desc = document.getElementById("modal-desc");
+    const type = document.getElementById("modal-type");
+    const weight = document.getElementById("modal-weight");
+    const weightText = document.getElementById("modal-weight-text");
+    const typeText = document.getElementById("modal-type-text");
+    const soldOverlay = document.getElementById("modal-sold-overlay");
 
-      // Determine content based on Lang
-      const name = getLocalizedContent(animal, "name", lang);
-      let description = getLocalizedContent(animal, "description", lang);
-      if (!description) {
-        description =
-          lang === "en"
-            ? "Quality qurban animal."
-            : "Hewan qurban berkualitas.";
-      }
+    const waBtn = document.getElementById("modal-wa-btn") as HTMLAnchorElement;
+    const campaignBtn = document.getElementById(
+      "modal-campaign-btn",
+    ) as HTMLAnchorElement;
+    const modalFooter = document.getElementById("modal-footer");
 
-      if (img)
-        img.src =
-          animal.imageUrl ||
-          `https://placehold.co/400x300/e2e8f0/1e293b?text=${encodeURIComponent(name)}`;
-      if (title) title.textContent = name;
-      if (price) price.textContent = formattedPrice;
-      if (desc) desc.textContent = description;
+    // Determine content based on Lang
+    const name = getLocalizedContent(animal, "name", lang);
+    let description = getLocalizedContent(animal, "description", lang);
+    if (!description) {
+      description =
+        lang === "en" ? "Quality qurban animal." : "Hewan qurban berkualitas.";
+    }
 
-      if (type) {
-        type.textContent = animal.type;
-        type.className = `badge-pill ${animal.type === "Sapi" ? "badge-cow" : "badge-goat"}`;
-      }
-      if (typeText) typeText.textContent = animal.type;
+    if (img)
+      img.src =
+        animal.imageUrl ||
+        `https://placehold.co/400x300/e2e8f0/1e293b?text=${encodeURIComponent(name)}`;
+    if (title) title.textContent = name;
+    if (price) price.textContent = formattedPrice;
+    if (desc) desc.textContent = description;
 
-      if (weight) {
-        weight.innerHTML = `
+    if (type) {
+      type.textContent = animal.type;
+      type.className = `badge-pill ${animal.type === "Sapi" ? "badge-cow" : "badge-goat"}`;
+    }
+    if (typeText) typeText.textContent = animal.type;
+
+    if (weight) {
+      weight.innerHTML = `
            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z"></path></svg>
            ${animal.weight} Kg
         `;
-      }
-      if (weightText) weightText.textContent = `${animal.weight} Kg`;
+    }
+    if (weightText) weightText.textContent = `${animal.weight} Kg`;
 
-      if (soldOverlay) {
-        if (animal.available === false) soldOverlay.classList.remove("hidden");
-        else soldOverlay.classList.add("hidden");
-      }
+    if (soldOverlay) {
+      if (animal.available === false) soldOverlay.classList.remove("hidden");
+      else soldOverlay.classList.add("hidden");
+    }
 
-      // Button Logic
-      if (campaignBtn) {
+    // Button Logic
+    if (campaignBtn) {
+      if (animal.urlCampaign) {
+        campaignBtn.href = animal.urlCampaign;
+        campaignBtn.classList.remove("hidden");
+      } else {
+        campaignBtn.classList.add("hidden");
+      }
+    }
+
+    if (waBtn) {
+      waBtn.href = waUrl;
+
+      // Reset classes
+      waBtn.className = "btn btn-whatsapp";
+
+      if (animal.available === false) {
+        waBtn.classList.add("btn-disabled", "full-width");
+        waBtn.style.pointerEvents = "none";
+        waBtn.textContent = lang === "en" ? "Sold Out" : "Habis Terjual";
+      } else {
+        waBtn.classList.remove("btn-disabled");
+        waBtn.style.pointerEvents = "auto";
+
         if (animal.urlCampaign) {
-          campaignBtn.href = animal.urlCampaign;
-          campaignBtn.classList.remove("hidden");
+          // Icon only if campaign button exists
+          waBtn.classList.add("icon-only");
+          waBtn.innerHTML = `<i class="fab fa-whatsapp btn-icon-fa"></i>`;
         } else {
-          campaignBtn.classList.add("hidden");
+          // Full width if no campaign button
+          waBtn.classList.add("full-width");
+          waBtn.innerHTML = `<i class="fab fa-whatsapp btn-icon-fa"></i> <span>${lang === "en" ? "Order on WhatsApp" : "Pesan via WhatsApp"}</span>`;
         }
       }
+    }
 
-      if (waBtn) {
-        waBtn.href = waUrl;
-
-        // Reset classes
-        waBtn.className = "btn btn-whatsapp";
-
-        if (animal.available === false) {
-          waBtn.classList.add("btn-disabled", "full-width");
-          waBtn.style.pointerEvents = "none";
-          waBtn.textContent = lang === "en" ? "Sold Out" : "Habis Terjual";
-        } else {
-          waBtn.classList.remove("btn-disabled");
-          waBtn.style.pointerEvents = "auto";
-
-          if (animal.urlCampaign) {
-            // Icon only if campaign button exists
-            waBtn.classList.add("icon-only");
-            waBtn.innerHTML = `<i class="fab fa-whatsapp btn-icon-fa"></i>`;
-          } else {
-            // Full width if no campaign button
-            waBtn.classList.add("full-width");
-            waBtn.innerHTML = `<i class="fab fa-whatsapp btn-icon-fa"></i> <span>${lang === "en" ? "Order on WhatsApp" : "Pesan via WhatsApp"}</span>`;
-          }
-        }
+    // Update Footer Grid Layout if needed
+    if (modalFooter) {
+      if (animal.urlCampaign && animal.available !== false) {
+        modalFooter.style.display = "grid";
+        modalFooter.style.gridTemplateColumns = "10fr 2fr";
+        modalFooter.style.gap = "0.5rem";
+      } else {
+        modalFooter.style.display = "flex";
+        modalFooter.style.gap = "0.75rem";
       }
+    }
 
-      // Update Footer Grid Layout if needed
-      if (modalFooter) {
-        if (animal.urlCampaign && animal.available !== false) {
-          modalFooter.style.display = "grid";
-          modalFooter.style.gridTemplateColumns = "10fr 2fr";
-          modalFooter.style.gap = "0.5rem";
-        } else {
-          modalFooter.style.display = "flex";
-          modalFooter.style.gap = "0.75rem";
-        }
-      }
-
-      // Show
-      modal.classList.remove("hidden");
-      // Small delay for CSS transition
-      requestAnimationFrame(() => {
-        modal.classList.add("active");
-      });
-      document.body.style.overflow = "hidden"; // Lock scroll
-    };
-  });
+    // Show
+    modal.classList.remove("hidden");
+    // Small delay for CSS transition
+    requestAnimationFrame(() => {
+      modal.classList.add("active");
+    });
+    document.body.style.overflow = "hidden"; // Lock scroll
+  };
 </script>
 
 <style>

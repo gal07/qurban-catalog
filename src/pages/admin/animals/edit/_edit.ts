@@ -3,14 +3,19 @@ import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { showToast } from '../../../../lib/toast';
 
-const form = document.getElementById('animal-form') as HTMLFormElement;
-const loading = document.getElementById('loading');
-const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
-const idInput = document.getElementById('animal-id') as HTMLInputElement;
+// Export init function
+export function init() {
+    const form = document.getElementById('animal-form') as HTMLFormElement;
+    const loading = document.getElementById('loading');
+    const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement;
+    const idInput = document.getElementById('animal-id') as HTMLInputElement;
 
-if (!idInput) {
-    console.error("No ID input found");
-} else {
+    if (!idInput) {
+        // If we are not on the edit page (or ID field missing), just return.
+        // This script might be loaded but we might be navigating away.
+        return;
+    }
+
     const id = idInput.value;
 
     // Fetch Existing Data
@@ -21,16 +26,27 @@ if (!idInput) {
             const docSnap = await getDoc(doc(db, "animals", id));
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                (document.getElementById('name') as HTMLInputElement).value = data.name;
-                (document.getElementById('name_en') as HTMLInputElement).value = data.name_en || '';
-                (document.getElementById('type') as HTMLInputElement).value = data.type;
-                (document.getElementById('price') as HTMLInputElement).value = data.price;
-                (document.getElementById('weight') as HTMLInputElement).value = data.weight;
-                (document.getElementById('available') as HTMLInputElement).value = String(data.available);
-                (document.getElementById('urlCampaign') as HTMLInputElement).value = data.urlCampaign || '';
-                (document.getElementById('imageUrl') as HTMLInputElement).value = data.imageUrl || '';
-                (document.getElementById('description') as HTMLTextAreaElement).value = data.description || '';
-                (document.getElementById('description_en') as HTMLTextAreaElement).value = data.description_en || '';
+                const nameInput = document.getElementById('name') as HTMLInputElement;
+                const nameEnInput = document.getElementById('name_en') as HTMLInputElement;
+                const typeInput = document.getElementById('type') as HTMLInputElement;
+                const priceInput = document.getElementById('price') as HTMLInputElement;
+                const weightInput = document.getElementById('weight') as HTMLInputElement;
+                const availableInput = document.getElementById('available') as HTMLInputElement;
+                const urlCampaignInput = document.getElementById('urlCampaign') as HTMLInputElement;
+                const imageUrlInput = document.getElementById('imageUrl') as HTMLInputElement;
+                const descriptionInput = document.getElementById('description') as HTMLTextAreaElement;
+                const descriptionEnInput = document.getElementById('description_en') as HTMLTextAreaElement;
+
+                if (nameInput) nameInput.value = data.name;
+                if (nameEnInput) nameEnInput.value = data.name_en || '';
+                if (typeInput) typeInput.value = data.type;
+                if (priceInput) priceInput.value = data.price;
+                if (weightInput) weightInput.value = data.weight;
+                if (availableInput) availableInput.value = String(data.available);
+                if (urlCampaignInput) urlCampaignInput.value = data.urlCampaign || '';
+                if (imageUrlInput) imageUrlInput.value = data.imageUrl || '';
+                if (descriptionInput) descriptionInput.value = data.description || '';
+                if (descriptionEnInput) descriptionEnInput.value = data.description_en || '';
 
                 loading.style.display = 'none';
                 form.classList.remove('hidden');
@@ -44,18 +60,19 @@ if (!idInput) {
         }
     }
 
-    // Wait for Auth
-    onAuthStateChanged(auth, (user) => {
+    // Wait for Auth or check current user
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
         if (user) {
             fetchData();
         } else {
             console.log("Waiting for auth...");
-            // Optionally redirect here if not already handled by layout
         }
     });
 
     // Update
     if (form) {
+        // Remove previous listener if possible? 
+        // With ViewTransitions, elements are new, so it's fine.
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (submitBtn) {

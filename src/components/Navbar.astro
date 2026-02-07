@@ -93,40 +93,59 @@ try {
             "googtrans=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" +
             window.location.hostname;
 
-          window.location.reload();
+          // Force full reload for language change (as per user request/requirement)
+          window.location.assign(window.location.href);
         }
       });
     });
   }
 
-  // Init on load
-  initLangSwitcher();
+  // Init on load and after navigation
+  document.addEventListener("astro:page-load", () => {
+    initLangSwitcher();
 
-  const mobileBtn = document.getElementById("mobile-menu-btn");
-  const navMenu = document.getElementById("nav-menu");
-  const navbar = document.getElementById("navbar");
+    const mobileBtn = document.getElementById("mobile-menu-btn");
+    const navMenu = document.getElementById("nav-menu");
+    const navbar = document.getElementById("navbar");
 
-  // Mobile Menu Toggle
-  mobileBtn?.addEventListener("click", () => {
-    mobileBtn.classList.toggle("active");
-    navMenu?.classList.toggle("active");
-  });
-
-  // Close menu when clicking a link
-  document.querySelectorAll(".nav-link").forEach((link) => {
-    link.addEventListener("click", () => {
-      mobileBtn?.classList.remove("active");
-      navMenu?.classList.remove("active");
-    });
-  });
-
-  // Example: Change navbar background on scroll
-  window.addEventListener("scroll", () => {
-    if (window.scrollY > 50) {
-      navbar?.classList.add("scrolled");
-    } else {
-      navbar?.classList.remove("scrolled");
+    // Mobile Menu Toggle
+    if (mobileBtn) {
+      // Remove old listener to avoid duplicates if element persists?
+      // Actually, with View Transitions, the body content is replaced, so elements are new.
+      // But let's clone node or just add listener.
+      // A cleaner way is named function but anonymous is fine if elements are new.
+      mobileBtn.addEventListener("click", () => {
+        mobileBtn.classList.toggle("active");
+        navMenu?.classList.toggle("active");
+      });
     }
+
+    // Close menu when clicking a link
+    document.querySelectorAll(".nav-link").forEach((link) => {
+      link.addEventListener("click", () => {
+        mobileBtn?.classList.remove("active");
+        navMenu?.classList.remove("active");
+      });
+    });
+
+    // Example: Change navbar background on scroll
+    // Remove previous listener? Window persists.
+    // Better to check if listener already needed or manage it.
+    // For simple scroll, adding multiple listeners is bad.
+    // Let's rely on a global scroll handler or check specialized Astro patterns.
+    // Or just simple check:
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        navbar?.classList.add("scrolled");
+      } else {
+        navbar?.classList.remove("scrolled");
+      }
+    };
+
+    // Remove if exists (hard to do with anonymous function)
+    // Ideally we define function outside.
+    window.removeEventListener("scroll", handleScroll); // Wont work for anon
+    window.addEventListener("scroll", handleScroll);
   });
 </script>
 

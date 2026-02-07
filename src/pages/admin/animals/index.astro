@@ -356,4 +356,7 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
     </div>
 </AdminLayout>
 
-<script src="./_index.ts"></script>
+<script>
+    import { init } from "./_index.ts";
+    document.addEventListener("astro:page-load", init);
+</script>

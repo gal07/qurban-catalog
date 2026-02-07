@@ -3,300 +3,313 @@ import { collection, getDocs, doc, addDoc, updateDoc, getDoc, setDoc } from 'fir
 import { onAuthStateChanged } from 'firebase/auth';
 import { showToast } from '../../lib/toast';
 
-// --- WhatsApp Settings ---
-const settingsForm = document.getElementById('settings-form') as HTMLFormElement;
-const saveSettingsBtn = document.getElementById('save-settings-btn') as HTMLButtonElement;
-const waNumberInput = document.getElementById('wa-number') as HTMLInputElement;
-const waTemplateInput = document.getElementById('wa-template') as HTMLTextAreaElement;
-let settingWaDocId: string | null = null;
+// Export init function
+export function init() {
+    // --- WhatsApp Settings ---
+    const settingsForm = document.getElementById('settings-form') as HTMLFormElement;
 
-// --- Theme Settings ---
-const themeForm = document.getElementById('theme-settings-form') as HTMLFormElement;
-const saveThemeBtn = document.getElementById('save-theme-btn') as HTMLButtonElement;
-const resetThemeBtn = document.getElementById('reset-theme-btn') as HTMLButtonElement;
+    // Guard: If we are not on settings page, stop.
+    // We check for one of the main forms.
+    if (!settingsForm && !document.getElementById('theme-settings-form')) return;
 
-// --- Logo Settings ---
-const logoForm = document.getElementById('logo-settings-form') as HTMLFormElement;
-const logoInput = document.getElementById('logo-file') as HTMLInputElement;
-const saveLogoBtn = document.getElementById('save-logo-btn') as HTMLButtonElement;
-const currentLogoImg = document.getElementById('current-logo-img') as HTMLImageElement;
+    const saveSettingsBtn = document.getElementById('save-settings-btn') as HTMLButtonElement;
+    const waNumberInput = document.getElementById('wa-number') as HTMLInputElement;
+    const waTemplateInput = document.getElementById('wa-template') as HTMLTextAreaElement;
+    let settingWaDocId: string | null = null;
 
-// Theme Inputs mapping (ID suffix -> property name)
-const themeInputs = [
-    { id: 'primary', prop: 'primary' },
-    { id: 'primary-light', prop: 'primaryLight' },
-    { id: 'primary-dark', prop: 'primaryDark' },
-    { id: 'accent', prop: 'accent' },
-    { id: 'accent-light', prop: 'accentLight' }
-];
+    // --- Theme Settings ---
+    const themeForm = document.getElementById('theme-settings-form') as HTMLFormElement;
+    const saveThemeBtn = document.getElementById('save-theme-btn') as HTMLButtonElement;
+    const resetThemeBtn = document.getElementById('reset-theme-btn') as HTMLButtonElement;
 
-// Defaults
-const defaultTheme = {
-    primary: '#365BAB',
-    primaryLight: '#5d7cc4',
-    primaryDark: '#2a4685',
-    accent: '#75C9ED',
-    accentLight: '#a0e0fc'
-};
+    // --- Logo Settings ---
+    const logoForm = document.getElementById('logo-settings-form') as HTMLFormElement;
+    const logoInput = document.getElementById('logo-file') as HTMLInputElement;
+    const saveLogoBtn = document.getElementById('save-logo-btn') as HTMLButtonElement;
+    const currentLogoImg = document.getElementById('current-logo-img') as HTMLImageElement;
 
-// --- Helper Functions ---
+    // Theme Inputs mapping (ID suffix -> property name)
+    const themeInputs = [
+        { id: 'primary', prop: 'primary' },
+        { id: 'primary-light', prop: 'primaryLight' },
+        { id: 'primary-dark', prop: 'primaryDark' },
+        { id: 'accent', prop: 'accent' },
+        { id: 'accent-light', prop: 'accentLight' }
+    ];
 
-function syncColorInputs(colorId: string, textId: string) {
-    const colorInput = document.getElementById(colorId) as HTMLInputElement;
-    const textInput = document.getElementById(textId) as HTMLInputElement;
+    // Defaults
+    const defaultTheme = {
+        primary: '#365BAB',
+        primaryLight: '#5d7cc4',
+        primaryDark: '#2a4685',
+        accent: '#75C9ED',
+        accentLight: '#a0e0fc'
+    };
 
-    if (!colorInput || !textInput) return;
+    // --- Helper Functions ---
 
-    colorInput.addEventListener('input', () => {
-        textInput.value = colorInput.value;
-    });
+    function syncColorInputs(colorId: string, textId: string) {
+        const colorInput = document.getElementById(colorId) as HTMLInputElement;
+        const textInput = document.getElementById(textId) as HTMLInputElement;
 
-    textInput.addEventListener('input', () => {
-        if (/^#[0-9A-F]{6}$/i.test(textInput.value)) {
-            colorInput.value = textInput.value;
-        }
-    });
+        if (!colorInput || !textInput) return;
 
-    textInput.addEventListener('change', () => {
-        if (!/^#[0-9A-F]{6}$/i.test(textInput.value)) {
-            // Reset to color input value if invalid
+        colorInput.addEventListener('input', () => {
             textInput.value = colorInput.value;
-        }
-    });
-}
+        });
 
-function initThemeSync() {
-    themeInputs.forEach(item => {
-        syncColorInputs(`color-${item.id}`, `text-${item.id}`);
-    });
-}
-
-// --- Fetch Functions ---
-
-async function fetchWASettings() {
-    if (!waNumberInput) return; // Guard
-
-    waNumberInput.disabled = true;
-    waTemplateInput.disabled = true;
-    if (saveSettingsBtn) saveSettingsBtn.disabled = true;
-
-    try {
-        const querySnapshot = await getDocs(collection(db, "setting_wa"));
-        if (!querySnapshot.empty) {
-            const docSnap = querySnapshot.docs[0];
-            const data = docSnap.data();
-            settingWaDocId = docSnap.id;
-            waNumberInput.value = data.whatsappNumber || '';
-            waTemplateInput.value = data.messageTemplate || '';
-        }
-    } catch (e) {
-        console.error("Error fetching WA settings:", e);
-    } finally {
-        waNumberInput.disabled = false;
-        waTemplateInput.disabled = false;
-        if (saveSettingsBtn) saveSettingsBtn.disabled = false;
-    }
-}
-
-async function fetchThemeSettings() {
-    if (!saveThemeBtn) return;
-    saveThemeBtn.disabled = true;
-
-    try {
-        const docRef = doc(db, "settings", "theme");
-        const docSnap = await getDoc(docRef);
-
-        let data = defaultTheme;
-        if (docSnap.exists()) {
-            data = { ...defaultTheme, ...docSnap.data() };
-        }
-
-        themeInputs.forEach(item => {
-            const colorInput = document.getElementById(`color-${item.id}`) as HTMLInputElement;
-            const textInput = document.getElementById(`text-${item.id}`) as HTMLInputElement;
-            const val = data[item.prop as keyof typeof defaultTheme];
-
-            if (colorInput && textInput && val) {
-                colorInput.value = val;
-                textInput.value = val;
+        textInput.addEventListener('input', () => {
+            if (/^#[0-9A-F]{6}$/i.test(textInput.value)) {
+                colorInput.value = textInput.value;
             }
         });
 
-    } catch (e) {
-        console.error("Error fetching theme:", e);
-    } finally {
-        if (saveThemeBtn) saveThemeBtn.disabled = false;
-    }
-}
-
-async function fetchLogoSettings() {
-    try {
-        const logoSnap = await getDoc(doc(db, "content", "logo"));
-        if (logoSnap.exists() && currentLogoImg) {
-            currentLogoImg.src = logoSnap.data().url || '/logo.jpg';
-        }
-    } catch (e) {
-        console.error("Error fetching logo:", e);
-    }
-}
-
-// --- Event Listeners ---
-
-settingsForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (saveSettingsBtn) {
-        saveSettingsBtn.disabled = true;
-        saveSettingsBtn.textContent = 'Menyimpan...';
+        textInput.addEventListener('change', () => {
+            if (!/^#[0-9A-F]{6}$/i.test(textInput.value)) {
+                // Reset to color input value if invalid
+                textInput.value = colorInput.value;
+            }
+        });
     }
 
-    try {
-        if (settingWaDocId) {
-            await updateDoc(doc(db, "setting_wa", settingWaDocId), {
-                whatsappNumber: waNumberInput.value,
-                messageTemplate: waTemplateInput.value
-            });
-        } else {
-            // Handle race condition if created elsewhere or double check
+    function initThemeSync() {
+        themeInputs.forEach(item => {
+            syncColorInputs(`color-${item.id}`, `text-${item.id}`);
+        });
+    }
+
+    // --- Fetch Functions ---
+
+    async function fetchWASettings() {
+        if (!waNumberInput) return; // Guard
+
+        waNumberInput.disabled = true;
+        waTemplateInput.disabled = true;
+        if (saveSettingsBtn) saveSettingsBtn.disabled = true;
+
+        try {
             const querySnapshot = await getDocs(collection(db, "setting_wa"));
             if (!querySnapshot.empty) {
-                settingWaDocId = querySnapshot.docs[0].id;
-                await updateDoc(doc(db, "setting_wa", settingWaDocId), {
-                    whatsappNumber: waNumberInput.value,
-                    messageTemplate: waTemplateInput.value
-                });
-            } else {
-                const docRef = await addDoc(collection(db, "setting_wa"), {
-                    whatsappNumber: waNumberInput.value,
-                    messageTemplate: waTemplateInput.value
-                });
-                settingWaDocId = docRef.id;
+                const docSnap = querySnapshot.docs[0];
+                const data = docSnap.data();
+                settingWaDocId = docSnap.id;
+                waNumberInput.value = data.whatsappNumber || '';
+                waTemplateInput.value = data.messageTemplate || '';
             }
-        }
-        showToast('Pengaturan WhatsApp berhasil disimpan!', 'success');
-    } catch (e) {
-        console.error(e);
-        showToast('Gagal menyimpan pengaturan WhatsApp.', 'error');
-    } finally {
-        if (saveSettingsBtn) {
-            saveSettingsBtn.disabled = false;
-            saveSettingsBtn.textContent = 'Simpan Pengaturan';
+        } catch (e) {
+            console.error("Error fetching WA settings:", e);
+        } finally {
+            waNumberInput.disabled = false;
+            waTemplateInput.disabled = false;
+            if (saveSettingsBtn) saveSettingsBtn.disabled = false;
         }
     }
-});
 
-themeForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (saveThemeBtn) {
+    async function fetchThemeSettings() {
+        if (!saveThemeBtn) return;
         saveThemeBtn.disabled = true;
-        saveThemeBtn.textContent = 'Menyimpan...';
+
+        try {
+            const docRef = doc(db, "settings", "theme");
+            const docSnap = await getDoc(docRef);
+
+            let data = defaultTheme;
+            if (docSnap.exists()) {
+                data = { ...defaultTheme, ...docSnap.data() };
+            }
+
+            themeInputs.forEach(item => {
+                const colorInput = document.getElementById(`color-${item.id}`) as HTMLInputElement;
+                const textInput = document.getElementById(`text-${item.id}`) as HTMLInputElement;
+                const val = data[item.prop as keyof typeof defaultTheme];
+
+                if (colorInput && textInput && val) {
+                    colorInput.value = val;
+                    textInput.value = val;
+                }
+            });
+
+        } catch (e) {
+            console.error("Error fetching theme:", e);
+        } finally {
+            if (saveThemeBtn) saveThemeBtn.disabled = false;
+        }
     }
 
-    try {
-        const newData: any = {};
-        themeInputs.forEach(item => {
-            const textInput = document.getElementById(`text-${item.id}`) as HTMLInputElement;
-            if (textInput) {
-                newData[item.prop] = textInput.value;
+    async function fetchLogoSettings() {
+        try {
+            const logoSnap = await getDoc(doc(db, "content", "logo"));
+            if (logoSnap.exists() && currentLogoImg) {
+                currentLogoImg.src = logoSnap.data().url || '/logo.jpg';
+            }
+        } catch (e) {
+            console.error("Error fetching logo:", e);
+        }
+    }
+
+    // --- Event Listeners ---
+
+    if (settingsForm) {
+        settingsForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (saveSettingsBtn) {
+                saveSettingsBtn.disabled = true;
+                saveSettingsBtn.textContent = 'Menyimpan...';
+            }
+
+            try {
+                if (settingWaDocId) {
+                    await updateDoc(doc(db, "setting_wa", settingWaDocId), {
+                        whatsappNumber: waNumberInput.value,
+                        messageTemplate: waTemplateInput.value
+                    });
+                } else {
+                    // Handle race condition if created elsewhere or double check
+                    const querySnapshot = await getDocs(collection(db, "setting_wa"));
+                    if (!querySnapshot.empty) {
+                        settingWaDocId = querySnapshot.docs[0].id;
+                        await updateDoc(doc(db, "setting_wa", settingWaDocId), {
+                            whatsappNumber: waNumberInput.value,
+                            messageTemplate: waTemplateInput.value
+                        });
+                    } else {
+                        const docRef = await addDoc(collection(db, "setting_wa"), {
+                            whatsappNumber: waNumberInput.value,
+                            messageTemplate: waTemplateInput.value
+                        });
+                        settingWaDocId = docRef.id;
+                    }
+                }
+                showToast('Pengaturan WhatsApp berhasil disimpan!', 'success');
+            } catch (e) {
+                console.error(e);
+                showToast('Gagal menyimpan pengaturan WhatsApp.', 'error');
+            } finally {
+                if (saveSettingsBtn) {
+                    saveSettingsBtn.disabled = false;
+                    saveSettingsBtn.textContent = 'Simpan Pengaturan';
+                }
             }
         });
-
-        const docRef = doc(db, "settings", "theme");
-        await setDoc(docRef, newData, { merge: true });
-
-        showToast('Tema berhasil disimpan! Refresh halaman untuk melihat perubahan.', 'success');
-
-        // Optional: Update current session preview (though refresh is safer)
-        const root = document.documentElement;
-        if (newData.primary) root.style.setProperty("--color-primary", newData.primary);
-        // ... updates others if needed, but alert mentions refresh
-
-    } catch (e) {
-        console.error(e);
-        showToast('Gagal menyimpan tema.', 'error');
-    } finally {
-        if (saveThemeBtn) {
-            saveThemeBtn.disabled = false;
-            saveThemeBtn.textContent = 'Simpan Tema';
-        }
-    }
-});
-
-logoForm?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    if (!logoInput.files || logoInput.files.length === 0) {
-        showToast("Pilih file logo terlebih dahulu.", 'warning');
-        return;
     }
 
-    if (saveLogoBtn) {
-        saveLogoBtn.disabled = true;
-        saveLogoBtn.textContent = 'Mengupload...';
-    }
+    if (themeForm) {
+        themeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (saveThemeBtn) {
+                saveThemeBtn.disabled = true;
+                saveThemeBtn.textContent = 'Menyimpan...';
+            }
 
-    const file = logoInput.files[0];
-    const formData = new FormData();
-    formData.append('file', file);
+            try {
+                const newData: any = {};
+                themeInputs.forEach(item => {
+                    const textInput = document.getElementById(`text-${item.id}`) as HTMLInputElement;
+                    if (textInput) {
+                        newData[item.prop] = textInput.value;
+                    }
+                });
 
-    try {
-        // Upload
-        const res = await fetch('/api/upload', {
-            method: 'POST',
-            body: formData
+                const docRef = doc(db, "settings", "theme");
+                await setDoc(docRef, newData, { merge: true });
+
+                showToast('Tema berhasil disimpan! Refresh halaman untuk melihat perubahan.', 'success');
+
+                // Optional: Update current session preview (though refresh is safer)
+                const root = document.documentElement;
+                if (newData.primary) root.style.setProperty("--color-primary", newData.primary);
+                // ... updates others if needed, but alert mentions refresh
+
+            } catch (e) {
+                console.error(e);
+                showToast('Gagal menyimpan tema.', 'error');
+            } finally {
+                if (saveThemeBtn) {
+                    saveThemeBtn.disabled = false;
+                    saveThemeBtn.textContent = 'Simpan Tema';
+                }
+            }
         });
-
-        if (!res.ok) throw new Error("Upload gagal");
-
-        const data = await res.json();
-        const logoUrl = data.url;
-
-        // Save to Firestore
-        await setDoc(doc(db, "content", "logo"), {
-            url: logoUrl,
-            updatedAt: new Date()
-        });
-
-        if (currentLogoImg) currentLogoImg.src = logoUrl;
-
-        showToast("Logo berhasil diupload dan disimpan!", 'success');
-        logoForm.reset();
-
-    } catch (e) {
-        console.error(e);
-        showToast("Gagal mengupload logo.", 'error');
-    } finally {
-        if (saveLogoBtn) {
-            saveLogoBtn.disabled = false;
-            saveLogoBtn.textContent = 'Upload & Simpan Logo';
-        }
     }
-});
 
-resetThemeBtn?.addEventListener('click', async () => {
-    if (!confirm('Apakah anda yakin ingin mengembalikan tema ke default?')) return;
+    if (logoForm) {
+        logoForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!logoInput.files || logoInput.files.length === 0) {
+                showToast("Pilih file logo terlebih dahulu.", 'warning');
+                return;
+            }
 
-    themeInputs.forEach(item => {
-        const colorInput = document.getElementById(`color-${item.id}`) as HTMLInputElement;
-        const textInput = document.getElementById(`text-${item.id}`) as HTMLInputElement;
-        const val = defaultTheme[item.prop as keyof typeof defaultTheme];
+            if (saveLogoBtn) {
+                saveLogoBtn.disabled = true;
+                saveLogoBtn.textContent = 'Mengupload...';
+            }
 
-        if (colorInput && textInput) {
-            colorInput.value = val;
-            textInput.value = val;
+            const file = logoInput.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                // Upload
+                const res = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!res.ok) throw new Error("Upload gagal");
+
+                const data = await res.json();
+                const logoUrl = data.url;
+
+                // Save to Firestore
+                await setDoc(doc(db, "content", "logo"), {
+                    url: logoUrl,
+                    updatedAt: new Date()
+                });
+
+                if (currentLogoImg) currentLogoImg.src = logoUrl;
+
+                showToast("Logo berhasil diupload dan disimpan!", 'success');
+                logoForm.reset();
+
+            } catch (e) {
+                console.error(e);
+                showToast("Gagal mengupload logo.", 'error');
+            } finally {
+                if (saveLogoBtn) {
+                    saveLogoBtn.disabled = false;
+                    saveLogoBtn.textContent = 'Upload & Simpan Logo';
+                }
+            }
+        });
+    }
+
+    if (resetThemeBtn) {
+        resetThemeBtn.addEventListener('click', async () => {
+            if (!confirm('Apakah anda yakin ingin mengembalikan tema ke default?')) return;
+
+            themeInputs.forEach(item => {
+                const colorInput = document.getElementById(`color-${item.id}`) as HTMLInputElement;
+                const textInput = document.getElementById(`text-${item.id}`) as HTMLInputElement;
+                const val = defaultTheme[item.prop as keyof typeof defaultTheme];
+
+                if (colorInput && textInput) {
+                    colorInput.value = val;
+                    textInput.value = val;
+                }
+            });
+        });
+    }
+
+    // --- Init ---
+
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            fetchWASettings();
+            fetchThemeSettings();
+            fetchLogoSettings();
         }
     });
 
-    // Auto save? or just let user save? User should click save.
-    // But let's trigger save? No, let user confirm by clicking save.
-});
-
-// --- Init ---
-
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        fetchWASettings();
-        fetchThemeSettings();
-        fetchLogoSettings();
-    }
-});
-
-initThemeSync();
+    initThemeSync();
+}

@@ -15,6 +15,8 @@ try {
 } catch (e) {
   // Silent fail
 }
+
+import { ViewTransitions } from "astro:transitions";
 ---
 
 <!doctype html>
@@ -30,6 +32,7 @@ try {
       href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <ViewTransitions />
   </head>
   <body
     class="bg-gray-50 font-sans text-slate-800 antialiased h-screen flex overflow-hidden"
@@ -393,115 +396,150 @@ try {
       import { auth } from "../lib/firebase";
       import { onAuthStateChanged, signOut } from "firebase/auth";
 
-      // Auth Logic
-      const authLoading = document.getElementById("auth-loading");
+      // Auth Logic - Runs once on module load, but listener persists
+      // We need to re-check specific UI elements if we navigate
+      const checkAuthUI = () => {
+        // UI Elements are new on every page load
+        const authLoading = document.getElementById("auth-loading");
 
-      onAuthStateChanged(auth, (user) => {
-        if (!user) {
-          // No user is signed in, redirect to login
-          window.location.href = "/admin/login";
-        } else {
-          // User is signed in, hide loader
-          if (authLoading) {
-            authLoading.classList.add("opacity-0");
-            setTimeout(() => {
-              authLoading.style.display = "none";
-            }, 300);
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+          if (!user) {
+            window.location.href = "/admin/login";
+          } else {
+            if (authLoading) {
+              authLoading.classList.add("opacity-0");
+              setTimeout(() => {
+                authLoading.style.display = "none";
+              }, 300);
+            }
+          }
+        });
+        return unsubscribe; // If needed to cleanup
+      };
+
+      // INIT SCRIPT ON NAVIGATE
+      document.addEventListener("astro:page-load", () => {
+        // Re-attach Auth UI handler
+        // Note: onAuthStateChanged adds a new listener every time.
+        // Ideally we have a single global listener, but UI elements change.
+        // Let's rely on a simple check or the existing listener if it persists?
+        // No, with View Transitions, scripts re-run if they are inline?
+        // <script> tag in Astro by default runs ONCE if it's a module (type="module" default for imports).
+        // But here we are inside the Layout which persists or is replaced? Layout is re-rendered.
+        // Wait, Astro View Transition scripts behavior:
+        // Inline scripts run on every page load unless `is:inline` is NOT used but imports make it a module?
+        // "Scripts in .astro files are processed as modules and run once."
+        // So we MUST use astro:page-load for UI.
+
+        checkAuthUI();
+
+        // Sidebar Logic
+        const sidebar = document.getElementById("sidebar");
+        const openBtn = document.getElementById("open-sidebar");
+        const closeBtn = document.getElementById("close-sidebar");
+        const backdrop = document.getElementById("sidebar-backdrop");
+        const logoutBtn = document.getElementById("logout-btn");
+
+        function toggleSidebar() {
+          if (!sidebar || !backdrop) return;
+          // Need to re-query class state or managing it logic
+          const isClosed = sidebar.classList.contains("-translate-x-full");
+          if (isClosed) {
+            sidebar.classList.remove("-translate-x-full");
+            backdrop.classList.remove("hidden");
+            setTimeout(() => backdrop.classList.remove("opacity-0"), 10);
+          } else {
+            sidebar.classList.add("-translate-x-full");
+            backdrop.classList.add("opacity-0");
+            setTimeout(() => backdrop.classList.add("hidden"), 300);
           }
         }
-      });
 
-      // Sidebar Logic
-      const sidebar = document.getElementById("sidebar");
-      const openBtn = document.getElementById("open-sidebar");
-      const closeBtn = document.getElementById("close-sidebar");
-      const backdrop = document.getElementById("sidebar-backdrop");
-      const logoutBtn = document.getElementById("logout-btn");
+        if (openBtn) openBtn.addEventListener("click", toggleSidebar);
+        if (closeBtn) closeBtn.addEventListener("click", toggleSidebar);
+        if (backdrop) backdrop.addEventListener("click", toggleSidebar);
 
-      function toggleSidebar() {
-        if (!sidebar || !backdrop) return;
-        const isClosed = sidebar.classList.contains("-translate-x-full");
-        if (isClosed) {
-          sidebar.classList.remove("-translate-x-full");
-          backdrop.classList.remove("hidden");
-          setTimeout(() => backdrop.classList.remove("opacity-0"), 10);
-        } else {
-          sidebar.classList.add("-translate-x-full");
-          backdrop.classList.add("opacity-0");
-          setTimeout(() => backdrop.classList.add("hidden"), 300);
+        // Highlight active link
+        const currentPath = window.location.pathname;
+        // Simple strict match or startswith
+        // Remove active classes first? No, server renders them?
+        // Actually server renders static HTML. If we use client side nav, we must update active state CLIENT SIDE.
+        const links = document.querySelectorAll("nav a");
+        links.forEach((link) => {
+          const href = link.getAttribute("href");
+          // Reset state first
+          link.className =
+            "flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 group text-slate-300 hover:bg-slate-800 hover:text-white hover:shadow-md"; // Default
+
+          // Check active
+          if (
+            href &&
+            (href === currentPath ||
+              (currentPath.startsWith(href) && href !== "/admin"))
+          ) {
+            link.classList.add("bg-slate-800", "text-white", "shadow-md");
+            link.classList.remove("text-slate-300");
+            const icon = link.querySelector("span");
+            if (icon) icon.className = "mr-3 text-sky-400";
+          }
+        });
+
+        // Dropdown Logic
+        const contentBtn = document.getElementById("content-menu-btn");
+        const contentSubmenu = document.getElementById("content-submenu");
+        const contentChevron = document.getElementById("content-chevron");
+        const contentIcon = document.getElementById("content-menu-icon");
+
+        function toggleContentMenu() {
+          if (!contentSubmenu || !contentChevron) return;
+          contentSubmenu.classList.toggle("hidden");
+          contentChevron.classList.toggle("rotate-180");
+
+          // Save state to localStorage to persist across navigation
+          const isOpen = !contentSubmenu.classList.contains("hidden");
+          localStorage.setItem("admin-content-menu-open", String(isOpen));
         }
-      }
 
-      openBtn?.addEventListener("click", toggleSidebar);
-      closeBtn?.addEventListener("click", toggleSidebar);
-      backdrop?.addEventListener("click", toggleSidebar);
+        if (contentBtn) contentBtn.addEventListener("click", toggleContentMenu);
 
-      // Highlight active link
-      const currentPath = window.location.pathname;
-      const links = document.querySelectorAll("nav a");
-      links.forEach((link) => {
-        const href = link.getAttribute("href");
-        if (
-          href &&
-          (href === currentPath ||
-            (currentPath.startsWith(href) && href !== "/admin"))
-        ) {
-          link.classList.add("bg-slate-800", "text-white", "shadow-md");
-          link.classList.remove("text-slate-300");
-          const icon = link.querySelector("span");
-          if (icon) icon.className = "mr-3 text-sky-400";
+        // Check active state for submenu items and restore state
+        const submenuLinks = contentSubmenu?.querySelectorAll("a");
+        let isChildActive = false;
+
+        submenuLinks?.forEach((link) => {
+          const href = link.getAttribute("href");
+          if (href && (href === currentPath || currentPath.startsWith(href))) {
+            link.classList.add(
+              "text-white",
+              "bg-slate-800/50",
+              "text-amber-400",
+            );
+            link.classList.remove("text-slate-400");
+            isChildActive = true;
+          }
+        });
+
+        // Restore menu state if stored or if child is active
+        const storedState = localStorage.getItem("admin-content-menu-open");
+        if (isChildActive || storedState === "true") {
+          contentSubmenu?.classList.remove("hidden");
+          contentChevron?.classList.add("rotate-180");
+          contentBtn?.classList.add("text-white");
+          if (contentIcon)
+            contentIcon.className = "mr-3 text-amber-400 transition-colors";
         }
-      });
 
-      // Dropdown Logic
-      const contentBtn = document.getElementById("content-menu-btn");
-      const contentSubmenu = document.getElementById("content-submenu");
-      const contentChevron = document.getElementById("content-chevron");
-      const contentIcon = document.getElementById("content-menu-icon");
-
-      function toggleContentMenu() {
-        if (!contentSubmenu || !contentChevron) return;
-        contentSubmenu.classList.toggle("hidden");
-        contentChevron.classList.toggle("rotate-180");
-
-        // Save state to localStorage to persist across navigation
-        const isOpen = !contentSubmenu.classList.contains("hidden");
-        localStorage.setItem("admin-content-menu-open", String(isOpen));
-      }
-
-      contentBtn?.addEventListener("click", toggleContentMenu);
-
-      // Check active state for submenu items and restore state
-      const submenuLinks = contentSubmenu?.querySelectorAll("a");
-      let isChildActive = false;
-
-      submenuLinks?.forEach((link) => {
-        const href = link.getAttribute("href");
-        if (href && (href === currentPath || currentPath.startsWith(href))) {
-          link.classList.add("text-white", "bg-slate-800/50", "text-amber-400");
-          link.classList.remove("text-slate-400");
-          isChildActive = true;
-        }
-      });
-
-      // Restore menu state if stored or if child is active
-      const storedState = localStorage.getItem("admin-content-menu-open");
-      if (isChildActive || storedState === "true") {
-        contentSubmenu?.classList.remove("hidden");
-        contentChevron?.classList.add("rotate-180");
-        contentBtn?.classList.add("text-white");
-        if (contentIcon)
-          contentIcon.className = "mr-3 text-amber-400 transition-colors";
-      }
-
-      logoutBtn?.addEventListener("click", async () => {
-        try {
-          await signOut(auth);
-          // Auth listener will handle redirect
-        } catch (error) {
-          console.error("Logout Error:", error);
-          // Fallback
-          window.location.href = "/admin/login";
+        if (logoutBtn) {
+          logoutBtn.addEventListener("click", async () => {
+            try {
+              await signOut(auth);
+              // Auth listener will handle redirect
+            } catch (error) {
+              console.error("Logout Error:", error);
+              // Fallback
+              window.location.href = "/admin/login";
+            }
+          });
         }
       });
     </script>

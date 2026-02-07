@@ -102,70 +102,77 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
     import { db } from "../../../lib/firebase";
     import { doc, getDoc, setDoc } from "firebase/firestore";
 
-    const form = document.getElementById("footer-form") as HTMLFormElement;
-    const descriptionInput = document.getElementById(
-        "description",
-    ) as HTMLTextAreaElement;
-    const descriptionEnInput = document.getElementById(
-        "description_en",
-    ) as HTMLTextAreaElement;
-    const bottomInput = document.getElementById("bottom") as HTMLInputElement;
-    const bottomEnInput = document.getElementById(
-        "bottom_en",
-    ) as HTMLInputElement;
+    document.addEventListener("astro:page-load", () => {
+        const form = document.getElementById("footer-form") as HTMLFormElement;
+        if (!form) return;
 
-    // Load initial data
-    async function loadData() {
-        try {
-            const docRef = doc(db, "content", "footer");
-            const docSnap = await getDoc(docRef);
+        const descriptionInput = document.getElementById(
+            "description",
+        ) as HTMLTextAreaElement;
+        const descriptionEnInput = document.getElementById(
+            "description_en",
+        ) as HTMLTextAreaElement;
+        const bottomInput = document.getElementById(
+            "bottom",
+        ) as HTMLInputElement;
+        const bottomEnInput = document.getElementById(
+            "bottom_en",
+        ) as HTMLInputElement;
 
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                if (descriptionInput)
-                    descriptionInput.value = data.description || "";
-                if (descriptionEnInput)
-                    descriptionEnInput.value = data.description_en || "";
-                if (bottomInput) bottomInput.value = data.bottom || "";
-                if (bottomEnInput) bottomEnInput.value = data.bottom_en || "";
+        // Load initial data
+        async function loadData() {
+            try {
+                const docRef = doc(db, "content", "footer");
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (descriptionInput)
+                        descriptionInput.value = data.description || "";
+                    if (descriptionEnInput)
+                        descriptionEnInput.value = data.description_en || "";
+                    if (bottomInput) bottomInput.value = data.bottom || "";
+                    if (bottomEnInput)
+                        bottomEnInput.value = data.bottom_en || "";
+                }
+            } catch (error) {
+                console.error("Error loading data:", error);
+                alert("Gagal memuat data. Silakan coba lagi.");
             }
-        } catch (error) {
-            console.error("Error loading data:", error);
-            alert("Gagal memuat data. Silakan coba lagi.");
-        }
-    }
-
-    loadData();
-
-    // Handle submit
-    form?.addEventListener("submit", async (e) => {
-        e.preventDefault();
-
-        const submitBtn = form.querySelector('button[type="submit"]');
-        if (submitBtn) {
-            submitBtn.textContent = "Menyimpan...";
-            (submitBtn as HTMLButtonElement).disabled = true;
         }
 
-        try {
-            const data = {
-                description: descriptionInput.value,
-                description_en: descriptionEnInput.value,
-                bottom: bottomInput.value,
-                bottom_en: bottomEnInput.value,
-                updatedAt: new Date().toISOString(),
-            };
+        loadData();
 
-            await setDoc(doc(db, "content", "footer"), data);
-            alert("Data berhasil disimpan!");
-        } catch (error) {
-            console.error("Error saving data:", error);
-            alert("Gagal menyimpan data: " + (error as Error).message);
-        } finally {
+        // Handle submit
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const submitBtn = form.querySelector('button[type="submit"]');
             if (submitBtn) {
-                submitBtn.textContent = "Simpan Perubahan";
-                (submitBtn as HTMLButtonElement).disabled = false;
+                submitBtn.textContent = "Menyimpan...";
+                (submitBtn as HTMLButtonElement).disabled = true;
             }
-        }
+
+            try {
+                const data = {
+                    description: descriptionInput.value,
+                    description_en: descriptionEnInput.value,
+                    bottom: bottomInput.value,
+                    bottom_en: bottomEnInput.value,
+                    updatedAt: new Date().toISOString(),
+                };
+
+                await setDoc(doc(db, "content", "footer"), data);
+                alert("Data berhasil disimpan!");
+            } catch (error) {
+                console.error("Error saving data:", error);
+                alert("Gagal menyimpan data: " + (error as Error).message);
+            } finally {
+                if (submitBtn) {
+                    submitBtn.textContent = "Simpan Perubahan";
+                    (submitBtn as HTMLButtonElement).disabled = false;
+                }
+            }
+        });
     });
 </script>

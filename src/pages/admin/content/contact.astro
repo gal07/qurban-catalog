@@ -92,67 +92,71 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
     import { db } from "../../../lib/firebase";
     import { doc, getDoc, setDoc } from "firebase/firestore";
 
-    const form = document.getElementById("contact-form") as HTMLFormElement;
-    const addressInput = document.getElementById(
-        "address",
-    ) as HTMLTextAreaElement;
-    const addressEnInput = document.getElementById(
-        "address_en",
-    ) as HTMLTextAreaElement;
-    const phoneInput = document.getElementById("phone") as HTMLInputElement;
-    const emailInput = document.getElementById("email") as HTMLInputElement;
+    document.addEventListener("astro:page-load", () => {
+        const form = document.getElementById("contact-form") as HTMLFormElement;
+        if (!form) return;
 
-    // Load initial data
-    async function loadData() {
-        try {
-            const docRef = doc(db, "content", "hubungi_kami");
-            const docSnap = await getDoc(docRef);
+        const addressInput = document.getElementById(
+            "address",
+        ) as HTMLTextAreaElement;
+        const addressEnInput = document.getElementById(
+            "address_en",
+        ) as HTMLTextAreaElement;
+        const phoneInput = document.getElementById("phone") as HTMLInputElement;
+        const emailInput = document.getElementById("email") as HTMLInputElement;
 
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                if (addressInput) addressInput.value = data.address || "";
-                if (addressEnInput)
-                    addressEnInput.value = data.address_en || "";
-                if (phoneInput) phoneInput.value = data.phone || "";
-                if (emailInput) emailInput.value = data.email || "";
+        // Load initial data
+        async function loadData() {
+            try {
+                const docRef = doc(db, "content", "hubungi_kami");
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (addressInput) addressInput.value = data.address || "";
+                    if (addressEnInput)
+                        addressEnInput.value = data.address_en || "";
+                    if (phoneInput) phoneInput.value = data.phone || "";
+                    if (emailInput) emailInput.value = data.email || "";
+                }
+            } catch (error) {
+                console.error("Error loading data:", error);
+                alert("Gagal memuat data. Silakan coba lagi.");
             }
-        } catch (error) {
-            console.error("Error loading data:", error);
-            alert("Gagal memuat data. Silakan coba lagi.");
-        }
-    }
-
-    loadData();
-
-    // Handle submit
-    form?.addEventListener("submit", async (e) => {
-        e.preventDefault();
-
-        const submitBtn = form.querySelector('button[type="submit"]');
-        if (submitBtn) {
-            submitBtn.textContent = "Menyimpan...";
-            (submitBtn as HTMLButtonElement).disabled = true;
         }
 
-        try {
-            const data = {
-                address: addressInput.value,
-                address_en: addressEnInput.value,
-                phone: phoneInput.value,
-                email: emailInput.value,
-                updatedAt: new Date().toISOString(),
-            };
+        loadData();
 
-            await setDoc(doc(db, "content", "hubungi_kami"), data);
-            alert("Data berhasil disimpan!");
-        } catch (error) {
-            console.error("Error saving data:", error);
-            alert("Gagal menyimpan data: " + (error as Error).message);
-        } finally {
+        // Handle submit
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const submitBtn = form.querySelector('button[type="submit"]');
             if (submitBtn) {
-                submitBtn.textContent = "Simpan Perubahan";
-                (submitBtn as HTMLButtonElement).disabled = false;
+                submitBtn.textContent = "Menyimpan...";
+                (submitBtn as HTMLButtonElement).disabled = true;
             }
-        }
+
+            try {
+                const data = {
+                    address: addressInput.value,
+                    address_en: addressEnInput.value,
+                    phone: phoneInput.value,
+                    email: emailInput.value,
+                    updatedAt: new Date().toISOString(),
+                };
+
+                await setDoc(doc(db, "content", "hubungi_kami"), data);
+                alert("Data berhasil disimpan!");
+            } catch (error) {
+                console.error("Error saving data:", error);
+                alert("Gagal menyimpan data: " + (error as Error).message);
+            } finally {
+                if (submitBtn) {
+                    submitBtn.textContent = "Simpan Perubahan";
+                    (submitBtn as HTMLButtonElement).disabled = false;
+                }
+            }
+        });
     });
 </script>

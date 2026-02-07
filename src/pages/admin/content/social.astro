@@ -37,49 +37,52 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
     import { db } from "../../../lib/firebase";
     import { doc, getDoc, setDoc } from "firebase/firestore";
 
-    const container = document.getElementById("social-links-container");
-    const addBtn = document.getElementById("add-link-btn");
-    const saveBtn = document.getElementById("save-btn");
-
-    const platforms = [
-        "Facebook",
-        "Instagram",
-        "Twitter",
-        "WhatsApp",
-        "YouTube",
-        "TikTok",
-        "LinkedIn",
-    ];
-
-    let socialLinks: Array<{ platform: string; url: string }> = [];
-
-    // Load data
-    async function loadData() {
-        try {
-            const docRef = doc(db, "content", "social");
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                socialLinks = data.links || [];
-            }
-
-            renderLinks();
-        } catch (error) {
-            console.error("Error loading data:", error);
-            alert("Gagal memuat data. Silakan coba lagi.");
-        }
-    }
-
-    function renderLinks() {
+    document.addEventListener("astro:page-load", () => {
+        const container = document.getElementById("social-links-container");
         if (!container) return;
-        container.innerHTML = "";
 
-        socialLinks.forEach((link, index) => {
-            const linkDiv = document.createElement("div");
-            linkDiv.className =
-                "flex gap-4 items-start p-4 bg-gray-50 rounded-lg";
-            linkDiv.innerHTML = `
+        const addBtn = document.getElementById("add-link-btn");
+        const saveBtn = document.getElementById("save-btn");
+
+        const platforms = [
+            "Facebook",
+            "Instagram",
+            "Twitter",
+            "WhatsApp",
+            "YouTube",
+            "TikTok",
+            "LinkedIn",
+        ];
+
+        let socialLinks: Array<{ platform: string; url: string }> = [];
+
+        // Load data
+        async function loadData() {
+            try {
+                const docRef = doc(db, "content", "social");
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    socialLinks = data.links || [];
+                }
+
+                renderLinks();
+            } catch (error) {
+                console.error("Error loading data:", error);
+                alert("Gagal memuat data. Silakan coba lagi.");
+            }
+        }
+
+        function renderLinks() {
+            if (!container) return;
+            container.innerHTML = "";
+
+            socialLinks.forEach((link, index) => {
+                const linkDiv = document.createElement("div");
+                linkDiv.className =
+                    "flex gap-4 items-start p-4 bg-gray-50 rounded-lg";
+                linkDiv.innerHTML = `
                 <div class="flex-1">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Platform</label>
                     <select 
@@ -111,61 +114,66 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
                     </button>
                 </div>
             `;
-            container.appendChild(linkDiv);
-        });
+                container.appendChild(linkDiv);
+            });
 
-        // Attach event listeners
-        container.querySelectorAll("select, input").forEach((el) => {
-            el.addEventListener("change", handleChange);
-        });
+            // Attach event listeners
+            container.querySelectorAll("select, input").forEach((el) => {
+                el.addEventListener("change", handleChange);
+            });
 
-        container.querySelectorAll(".remove-btn").forEach((btn) => {
-            btn.addEventListener("click", handleRemove);
-        });
-    }
-
-    function handleChange(e: Event) {
-        const target = e.target as HTMLInputElement | HTMLSelectElement;
-        const index = parseInt(target.dataset.index || "0");
-        const field = target.dataset.field as "platform" | "url";
-
-        if (socialLinks[index]) {
-            socialLinks[index][field] = target.value;
+            container.querySelectorAll(".remove-btn").forEach((btn) => {
+                btn.addEventListener("click", handleRemove);
+            });
         }
-    }
 
-    function handleRemove(e: Event) {
-        const target = e.target as HTMLButtonElement;
-        const index = parseInt(target.dataset.index || "0");
-        socialLinks.splice(index, 1);
-        renderLinks();
-    }
+        function handleChange(e: Event) {
+            const target = e.target as HTMLInputElement | HTMLSelectElement;
+            const index = parseInt(target.dataset.index || "0");
+            const field = target.dataset.field as "platform" | "url";
 
-    addBtn?.addEventListener("click", () => {
-        socialLinks.push({ platform: platforms[0], url: "" });
-        renderLinks();
-    });
-
-    saveBtn?.addEventListener("click", async () => {
-        saveBtn.textContent = "Menyimpan...";
-        (saveBtn as HTMLButtonElement).disabled = true;
-
-        try {
-            const data = {
-                links: socialLinks,
-                updatedAt: new Date().toISOString(),
-            };
-
-            await setDoc(doc(db, "content", "social"), data);
-            alert("Data berhasil disimpan!");
-        } catch (error) {
-            console.error("Error saving data:", error);
-            alert("Gagal menyimpan data: " + (error as Error).message);
-        } finally {
-            saveBtn.textContent = "Simpan Perubahan";
-            (saveBtn as HTMLButtonElement).disabled = false;
+            if (socialLinks[index]) {
+                socialLinks[index][field] = target.value;
+            }
         }
-    });
 
-    loadData();
+        function handleRemove(e: Event) {
+            const target = e.target as HTMLButtonElement;
+            const index = parseInt(target.dataset.index || "0");
+            socialLinks.splice(index, 1);
+            renderLinks();
+        }
+
+        if (addBtn) {
+            addBtn.addEventListener("click", () => {
+                socialLinks.push({ platform: platforms[0], url: "" });
+                renderLinks();
+            });
+        }
+
+        if (saveBtn) {
+            saveBtn.addEventListener("click", async () => {
+                saveBtn.textContent = "Menyimpan...";
+                (saveBtn as HTMLButtonElement).disabled = true;
+
+                try {
+                    const data = {
+                        links: socialLinks,
+                        updatedAt: new Date().toISOString(),
+                    };
+
+                    await setDoc(doc(db, "content", "social"), data);
+                    alert("Data berhasil disimpan!");
+                } catch (error) {
+                    console.error("Error saving data:", error);
+                    alert("Gagal menyimpan data: " + (error as Error).message);
+                } finally {
+                    saveBtn.textContent = "Simpan Perubahan";
+                    (saveBtn as HTMLButtonElement).disabled = false;
+                }
+            });
+        }
+
+        loadData();
+    });
 </script>

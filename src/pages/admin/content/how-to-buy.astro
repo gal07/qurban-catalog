@@ -77,72 +77,78 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
     import { db } from "../../../lib/firebase";
     import { doc, getDoc, setDoc } from "firebase/firestore";
 
-    const form = document.getElementById("how-to-buy-form") as HTMLFormElement;
-    const subtitleInput = document.getElementById(
-        "subtitle",
-    ) as HTMLTextAreaElement;
-    const subtitleEnInput = document.getElementById(
-        "subtitle_en",
-    ) as HTMLTextAreaElement;
-    const stepsContainer = document.getElementById("steps-container");
-    const addStepBtn = document.getElementById("add-step-btn");
+    document.addEventListener("astro:page-load", () => {
+        const form = document.getElementById(
+            "how-to-buy-form",
+        ) as HTMLFormElement;
+        if (!form) return;
 
-    interface Step {
-        title: string;
-        title_en: string;
-        description: string;
-        description_en: string;
-    }
+        const subtitleInput = document.getElementById(
+            "subtitle",
+        ) as HTMLTextAreaElement;
+        const subtitleEnInput = document.getElementById(
+            "subtitle_en",
+        ) as HTMLTextAreaElement;
+        const stepsContainer = document.getElementById("steps-container");
+        const addStepBtn = document.getElementById("add-step-btn");
 
-    let steps: Step[] = [];
-
-    // Load data
-    async function loadData() {
-        try {
-            const docRef = doc(db, "content", "how_to");
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                if (subtitleInput) subtitleInput.value = data.subtitle || "";
-                if (subtitleEnInput)
-                    subtitleEnInput.value = data.subtitle_en || "";
-
-                // Migration logic
-                const rawSteps = data.steps || [];
-                if (rawSteps.length > 0) {
-                    // Check if first item has title_en, if not, it's legacy
-                    if (rawSteps[0].title_en === undefined) {
-                        steps = rawSteps.map((s: any) => ({
-                            title: s.title || "",
-                            title_en: "",
-                            description: s.description || "",
-                            description_en: "",
-                        }));
-                    } else {
-                        steps = rawSteps;
-                    }
-                } else {
-                    steps = [];
-                }
-            }
-
-            renderSteps();
-        } catch (error) {
-            console.error("Error loading data:", error);
-            alert("Gagal memuat data. Silakan coba lagi.");
+        interface Step {
+            title: string;
+            title_en: string;
+            description: string;
+            description_en: string;
         }
-    }
 
-    function renderSteps() {
-        if (!stepsContainer) return;
-        stepsContainer.innerHTML = "";
+        let steps: Step[] = [];
 
-        steps.forEach((step, index) => {
-            const stepDiv = document.createElement("div");
-            stepDiv.className =
-                "p-4 bg-gray-50 rounded-lg border border-gray-200";
-            stepDiv.innerHTML = `
+        // Load data
+        async function loadData() {
+            try {
+                const docRef = doc(db, "content", "how_to");
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (subtitleInput)
+                        subtitleInput.value = data.subtitle || "";
+                    if (subtitleEnInput)
+                        subtitleEnInput.value = data.subtitle_en || "";
+
+                    // Migration logic
+                    const rawSteps = data.steps || [];
+                    if (rawSteps.length > 0) {
+                        // Check if first item has title_en, if not, it's legacy
+                        if (rawSteps[0].title_en === undefined) {
+                            steps = rawSteps.map((s: any) => ({
+                                title: s.title || "",
+                                title_en: "",
+                                description: s.description || "",
+                                description_en: "",
+                            }));
+                        } else {
+                            steps = rawSteps;
+                        }
+                    } else {
+                        steps = [];
+                    }
+                }
+
+                renderSteps();
+            } catch (error) {
+                console.error("Error loading data:", error);
+                alert("Gagal memuat data. Silakan coba lagi.");
+            }
+        }
+
+        function renderSteps() {
+            if (!stepsContainer) return;
+            stepsContainer.innerHTML = "";
+
+            steps.forEach((step, index) => {
+                const stepDiv = document.createElement("div");
+                stepDiv.className =
+                    "p-4 bg-gray-50 rounded-lg border border-gray-200";
+                stepDiv.innerHTML = `
                 <div class="flex justify-between items-start mb-3">
                     <span class="text-sm font-semibold text-gray-700">Step ${index + 1}</span>
                     <button 
@@ -205,79 +211,86 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
                     </div>
                 </div>
             `;
-            stepsContainer.appendChild(stepDiv);
-        });
+                stepsContainer.appendChild(stepDiv);
+            });
 
-        // Attach event listeners
-        stepsContainer.querySelectorAll(".step-input").forEach((el) => {
-            el.addEventListener("change", handleStepChange);
-        });
+            // Attach event listeners
+            stepsContainer.querySelectorAll(".step-input").forEach((el) => {
+                el.addEventListener("change", handleStepChange);
+            });
 
-        stepsContainer.querySelectorAll(".remove-step-btn").forEach((btn) => {
-            btn.addEventListener("click", handleRemoveStep);
-        });
-    }
-
-    function handleStepChange(e: Event) {
-        const target = e.target as HTMLInputElement | HTMLTextAreaElement;
-        const index = parseInt(target.dataset.index || "0");
-        const field = target.dataset.field as
-            | "title"
-            | "title_en"
-            | "description"
-            | "description_en";
-
-        if (steps[index]) {
-            steps[index][field] = target.value;
-        }
-    }
-
-    function handleRemoveStep(e: Event) {
-        const target = e.target as HTMLButtonElement;
-        const index = parseInt(target.dataset.index || "0");
-        steps.splice(index, 1);
-        renderSteps();
-    }
-
-    addStepBtn?.addEventListener("click", () => {
-        steps.push({
-            title: "",
-            title_en: "",
-            description: "",
-            description_en: "",
-        });
-        renderSteps();
-    });
-
-    form?.addEventListener("submit", async (e) => {
-        e.preventDefault();
-
-        const submitBtn = form.querySelector('button[type="submit"]');
-        if (submitBtn) {
-            submitBtn.textContent = "Menyimpan...";
-            (submitBtn as HTMLButtonElement).disabled = true;
+            stepsContainer
+                .querySelectorAll(".remove-step-btn")
+                .forEach((btn) => {
+                    btn.addEventListener("click", handleRemoveStep);
+                });
         }
 
-        try {
-            const data = {
-                subtitle: subtitleInput.value,
-                subtitle_en: subtitleEnInput.value,
-                steps: steps,
-                updatedAt: new Date().toISOString(),
-            };
+        function handleStepChange(e: Event) {
+            const target = e.target as HTMLInputElement | HTMLTextAreaElement;
+            const index = parseInt(target.dataset.index || "0");
+            const field = target.dataset.field as
+                | "title"
+                | "title_en"
+                | "description"
+                | "description_en";
 
-            await setDoc(doc(db, "content", "how_to"), data);
-            alert("Data berhasil disimpan!");
-        } catch (error) {
-            console.error("Error saving data:", error);
-            alert("Gagal menyimpan data: " + (error as Error).message);
-        } finally {
-            if (submitBtn) {
-                submitBtn.textContent = "Simpan Perubahan";
-                (submitBtn as HTMLButtonElement).disabled = false;
+            if (steps[index]) {
+                steps[index][field] = target.value;
             }
         }
-    });
 
-    loadData();
+        function handleRemoveStep(e: Event) {
+            const target = e.target as HTMLButtonElement;
+            const index = parseInt(target.dataset.index || "0");
+            steps.splice(index, 1);
+            renderSteps();
+        }
+
+        if (addStepBtn) {
+            addStepBtn.addEventListener("click", () => {
+                steps.push({
+                    title: "",
+                    title_en: "",
+                    description: "",
+                    description_en: "",
+                });
+                renderSteps();
+            });
+        }
+
+        if (form) {
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.textContent = "Menyimpan...";
+                    (submitBtn as HTMLButtonElement).disabled = true;
+                }
+
+                try {
+                    const data = {
+                        subtitle: subtitleInput.value,
+                        subtitle_en: subtitleEnInput.value,
+                        steps: steps,
+                        updatedAt: new Date().toISOString(),
+                    };
+
+                    await setDoc(doc(db, "content", "how_to"), data);
+                    alert("Data berhasil disimpan!");
+                } catch (error) {
+                    console.error("Error saving data:", error);
+                    alert("Gagal menyimpan data: " + (error as Error).message);
+                } finally {
+                    if (submitBtn) {
+                        submitBtn.textContent = "Simpan Perubahan";
+                        (submitBtn as HTMLButtonElement).disabled = false;
+                    }
+                }
+            });
+        }
+
+        loadData();
+    });
 </script>

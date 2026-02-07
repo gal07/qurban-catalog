@@ -253,4 +253,7 @@ if (!id) return Astro.redirect("/admin/animals");
   </div>
 </AdminLayout>
 
-<script src="./_edit.ts"></script>
+<script>
+  import { init } from "./_edit.ts";
+  document.addEventListener("astro:page-load", init);
+</script>

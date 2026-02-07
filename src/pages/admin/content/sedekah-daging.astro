@@ -247,224 +247,235 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
     import { db } from "../../../lib/firebase";
     import { doc, getDoc, setDoc } from "firebase/firestore";
 
-    const form = document.getElementById("sedekah-form") as HTMLFormElement;
-
-    // ID Inputs
-    const badgeInput = document.getElementById("badge") as HTMLInputElement;
-    const titleInput = document.getElementById("title") as HTMLInputElement;
-    const titleHighlightInput = document.getElementById(
-        "titleHighlight",
-    ) as HTMLInputElement;
-    const descriptionInput = document.getElementById(
-        "description",
-    ) as HTMLTextAreaElement;
-    const buttonTextInput = document.getElementById(
-        "buttonText",
-    ) as HTMLInputElement;
-
-    // EN Inputs
-    const badgeEnInput = document.getElementById(
-        "badge_en",
-    ) as HTMLInputElement;
-    const titleEnInput = document.getElementById(
-        "title_en",
-    ) as HTMLInputElement;
-    const titleHighlightEnInput = document.getElementById(
-        "titleHighlight_en",
-    ) as HTMLInputElement;
-    const descriptionEnInput = document.getElementById(
-        "description_en",
-    ) as HTMLTextAreaElement;
-    const buttonTextEnInput = document.getElementById(
-        "buttonText_en",
-    ) as HTMLInputElement;
-
-    const buttonUrlInput = document.getElementById(
-        "buttonUrl",
-    ) as HTMLInputElement;
-    const imageUrlInput = document.getElementById(
-        "imageUrl",
-    ) as HTMLInputElement;
-    const indicatorsContainer = document.getElementById("indicators-container");
-    const addIndicatorBtn = document.getElementById("add-indicator-btn");
-
     interface Indicator {
         id: string;
         en: string;
     }
 
-    let trustIndicators: Indicator[] = [];
+    document.addEventListener("astro:page-load", () => {
+        const form = document.getElementById("sedekah-form") as HTMLFormElement;
+        if (!form) return;
 
-    // Load data
-    async function loadData() {
-        try {
-            const docRef = doc(db, "content", "sedekah_daging");
-            const docSnap = await getDoc(docRef);
+        // ID Inputs
+        const badgeInput = document.getElementById("badge") as HTMLInputElement;
+        const titleInput = document.getElementById("title") as HTMLInputElement;
+        const titleHighlightInput = document.getElementById(
+            "titleHighlight",
+        ) as HTMLInputElement;
+        const descriptionInput = document.getElementById(
+            "description",
+        ) as HTMLTextAreaElement;
+        const buttonTextInput = document.getElementById(
+            "buttonText",
+        ) as HTMLInputElement;
 
-            if (docSnap.exists()) {
-                const data = docSnap.data();
+        // EN Inputs
+        const badgeEnInput = document.getElementById(
+            "badge_en",
+        ) as HTMLInputElement;
+        const titleEnInput = document.getElementById(
+            "title_en",
+        ) as HTMLInputElement;
+        const titleHighlightEnInput = document.getElementById(
+            "titleHighlight_en",
+        ) as HTMLInputElement;
+        const descriptionEnInput = document.getElementById(
+            "description_en",
+        ) as HTMLTextAreaElement;
+        const buttonTextEnInput = document.getElementById(
+            "buttonText_en",
+        ) as HTMLInputElement;
 
-                // Load ID
-                if (badgeInput) badgeInput.value = data.badge || "";
-                if (titleInput) titleInput.value = data.title || "";
-                if (titleHighlightInput)
-                    titleHighlightInput.value = data.titleHighlight || "";
-                if (descriptionInput)
-                    descriptionInput.value = data.description || "";
-                if (buttonTextInput)
-                    buttonTextInput.value = data.buttonText || "";
-                if (buttonUrlInput) buttonUrlInput.value = data.buttonUrl || "";
-                if (imageUrlInput) imageUrlInput.value = data.imageUrl || "";
+        const buttonUrlInput = document.getElementById(
+            "buttonUrl",
+        ) as HTMLInputElement;
+        const imageUrlInput = document.getElementById(
+            "imageUrl",
+        ) as HTMLInputElement;
+        const indicatorsContainer = document.getElementById(
+            "indicators-container",
+        );
+        const addIndicatorBtn = document.getElementById("add-indicator-btn");
 
-                // Load EN
-                if (badgeEnInput) badgeEnInput.value = data.badge_en || "";
-                if (titleEnInput) titleEnInput.value = data.title_en || "";
-                if (titleHighlightEnInput)
-                    titleHighlightEnInput.value = data.titleHighlight_en || "";
-                if (descriptionEnInput)
-                    descriptionEnInput.value = data.description_en || "";
-                if (buttonTextEnInput)
-                    buttonTextEnInput.value = data.buttonText_en || "";
+        let trustIndicators: Indicator[] = [];
 
-                // Handle indicators migration
-                const rawIndicators = data.trustIndicators || [];
-                if (rawIndicators.length > 0) {
-                    if (typeof rawIndicators[0] === "string") {
-                        trustIndicators = rawIndicators.map((s: string) => ({
-                            id: s,
-                            en: "",
-                        }));
+        // Load data
+        async function loadData() {
+            try {
+                const docRef = doc(db, "content", "sedekah_daging");
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+
+                    // Load ID
+                    if (badgeInput) badgeInput.value = data.badge || "";
+                    if (titleInput) titleInput.value = data.title || "";
+                    if (titleHighlightInput)
+                        titleHighlightInput.value = data.titleHighlight || "";
+                    if (descriptionInput)
+                        descriptionInput.value = data.description || "";
+                    if (buttonTextInput)
+                        buttonTextInput.value = data.buttonText || "";
+                    if (buttonUrlInput)
+                        buttonUrlInput.value = data.buttonUrl || "";
+                    if (imageUrlInput)
+                        imageUrlInput.value = data.imageUrl || "";
+
+                    // Load EN
+                    if (badgeEnInput) badgeEnInput.value = data.badge_en || "";
+                    if (titleEnInput) titleEnInput.value = data.title_en || "";
+                    if (titleHighlightEnInput)
+                        titleHighlightEnInput.value =
+                            data.titleHighlight_en || "";
+                    if (descriptionEnInput)
+                        descriptionEnInput.value = data.description_en || "";
+                    if (buttonTextEnInput)
+                        buttonTextEnInput.value = data.buttonText_en || "";
+
+                    // Handle indicators migration
+                    const rawIndicators = data.trustIndicators || [];
+                    if (rawIndicators.length > 0) {
+                        if (typeof rawIndicators[0] === "string") {
+                            trustIndicators = rawIndicators.map(
+                                (s: string) => ({
+                                    id: s,
+                                    en: "",
+                                }),
+                            );
+                        } else {
+                            trustIndicators = rawIndicators;
+                        }
                     } else {
-                        trustIndicators = rawIndicators;
+                        trustIndicators = [];
                     }
-                } else {
-                    trustIndicators = [];
                 }
+
+                renderIndicators();
+            } catch (error) {
+                console.error("Error loading data:", error);
+                alert("Gagal memuat data. Silakan coba lagi.");
             }
-
-            renderIndicators();
-        } catch (error) {
-            console.error("Error loading data:", error);
-            alert("Gagal memuat data. Silakan coba lagi.");
         }
-    }
 
-    function renderIndicators() {
-        if (!indicatorsContainer) return;
-        indicatorsContainer.innerHTML = "";
+        function renderIndicators() {
+            if (!indicatorsContainer) return;
+            indicatorsContainer.innerHTML = "";
 
-        trustIndicators.forEach((indicator, index) => {
-            const div = document.createElement("div");
-            div.className = "flex gap-2 items-start bg-gray-50 p-3 rounded-md";
-            div.innerHTML = `
-                <div class="flex-1 space-y-2">
-                    <input 
-                        type="text" 
+            trustIndicators.forEach((indicator, index) => {
+                const div = document.createElement("div");
+                div.className =
+                    "flex gap-2 items-start bg-gray-50 p-3 rounded-md";
+                div.innerHTML = `
+                    <div class="flex-1 space-y-2">
+                        <input 
+                            type="text" 
+                            data-index="${index}"
+                            data-lang="id"
+                            value="${indicator.id}"
+                            placeholder="Indicator (ID)"
+                            class="indicator-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        />
+                        <input 
+                            type="text" 
+                            data-index="${index}"
+                            data-lang="en"
+                            value="${indicator.en}"
+                            placeholder="Indicator (EN)"
+                            class="indicator-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        />
+                    </div>
+                    <button 
+                        type="button" 
                         data-index="${index}"
-                        data-lang="id"
-                        value="${indicator.id}"
-                        placeholder="Indicator (ID)"
-                        class="indicator-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                    />
-                    <input 
-                        type="text" 
-                        data-index="${index}"
-                        data-lang="en"
-                        value="${indicator.en}"
-                        placeholder="Indicator (EN)"
-                        class="indicator-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                    />
-                </div>
-                <button 
-                    type="button" 
-                    data-index="${index}"
-                    class="remove-indicator-btn px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors mt-1"
-                >
-                    Remove
-                </button>
-            `;
-            indicatorsContainer.appendChild(div);
+                        class="remove-indicator-btn px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors mt-1"
+                    >
+                        Remove
+                    </button>
+                `;
+                indicatorsContainer.appendChild(div);
+            });
+
+            // Attach event listeners
+            indicatorsContainer
+                .querySelectorAll(".indicator-input")
+                .forEach((el) => {
+                    el.addEventListener("change", handleIndicatorChange);
+                });
+
+            indicatorsContainer
+                .querySelectorAll(".remove-indicator-btn")
+                .forEach((btn) => {
+                    btn.addEventListener("click", handleRemoveIndicator);
+                });
+        }
+
+        function handleIndicatorChange(e: Event) {
+            const target = e.target as HTMLInputElement;
+            const index = parseInt(target.dataset.index || "0");
+            const lang = target.dataset.lang as "id" | "en";
+
+            if (trustIndicators[index]) {
+                trustIndicators[index][lang] = target.value;
+            }
+        }
+
+        function handleRemoveIndicator(e: Event) {
+            const target = e.target as HTMLButtonElement;
+            const index = parseInt(target.dataset.index || "0");
+            trustIndicators.splice(index, 1);
+            renderIndicators();
+        }
+
+        addIndicatorBtn?.addEventListener("click", () => {
+            trustIndicators.push({ id: "", en: "" });
+            renderIndicators();
         });
 
-        // Attach event listeners
-        indicatorsContainer
-            .querySelectorAll(".indicator-input")
-            .forEach((el) => {
-                el.addEventListener("change", handleIndicatorChange);
-            });
+        form?.addEventListener("submit", async (e) => {
+            e.preventDefault();
 
-        indicatorsContainer
-            .querySelectorAll(".remove-indicator-btn")
-            .forEach((btn) => {
-                btn.addEventListener("click", handleRemoveIndicator);
-            });
-    }
-
-    function handleIndicatorChange(e: Event) {
-        const target = e.target as HTMLInputElement;
-        const index = parseInt(target.dataset.index || "0");
-        const lang = target.dataset.lang as "id" | "en";
-
-        if (trustIndicators[index]) {
-            trustIndicators[index][lang] = target.value;
-        }
-    }
-
-    function handleRemoveIndicator(e: Event) {
-        const target = e.target as HTMLButtonElement;
-        const index = parseInt(target.dataset.index || "0");
-        trustIndicators.splice(index, 1);
-        renderIndicators();
-    }
-
-    addIndicatorBtn?.addEventListener("click", () => {
-        trustIndicators.push({ id: "", en: "" });
-        renderIndicators();
-    });
-
-    form?.addEventListener("submit", async (e) => {
-        e.preventDefault();
-
-        const submitBtn = form.querySelector('button[type="submit"]');
-        if (submitBtn) {
-            submitBtn.textContent = "Menyimpan...";
-            (submitBtn as HTMLButtonElement).disabled = true;
-        }
-
-        try {
-            const data = {
-                badge: badgeInput.value,
-                title: titleInput.value,
-                titleHighlight: titleHighlightInput.value,
-                description: descriptionInput.value,
-                buttonText: buttonTextInput.value,
-
-                badge_en: badgeEnInput.value,
-                title_en: titleEnInput.value,
-                titleHighlight_en: titleHighlightEnInput.value,
-                description_en: descriptionEnInput.value,
-                buttonText_en: buttonTextEnInput.value,
-
-                buttonUrl: buttonUrlInput.value,
-                imageUrl: imageUrlInput.value,
-                trustIndicators: trustIndicators.filter(
-                    (f) => f.id.trim() !== "" || f.en.trim() !== "",
-                ),
-                updatedAt: new Date().toISOString(),
-            };
-
-            await setDoc(doc(db, "content", "sedekah_daging"), data);
-            alert("Data berhasil disimpan!");
-        } catch (error) {
-            console.error("Error saving data:", error);
-            alert("Gagal menyimpan data: " + (error as Error).message);
-        } finally {
+            const submitBtn = form.querySelector('button[type="submit"]');
             if (submitBtn) {
-                submitBtn.textContent = "Simpan Perubahan";
-                (submitBtn as HTMLButtonElement).disabled = false;
+                submitBtn.textContent = "Menyimpan...";
+                (submitBtn as HTMLButtonElement).disabled = true;
             }
-        }
-    });
 
-    loadData();
+            try {
+                const data = {
+                    badge: badgeInput.value,
+                    title: titleInput.value,
+                    titleHighlight: titleHighlightInput.value,
+                    description: descriptionInput.value,
+                    buttonText: buttonTextInput.value,
+
+                    badge_en: badgeEnInput.value,
+                    title_en: titleEnInput.value,
+                    titleHighlight_en: titleHighlightEnInput.value,
+                    description_en: descriptionEnInput.value,
+                    buttonText_en: buttonTextEnInput.value,
+
+                    buttonUrl: buttonUrlInput.value,
+                    imageUrl: imageUrlInput.value,
+                    trustIndicators: trustIndicators.filter(
+                        (f) => f.id.trim() !== "" || f.en.trim() !== "",
+                    ),
+                    updatedAt: new Date().toISOString(),
+                };
+
+                await setDoc(doc(db, "content", "sedekah_daging"), data);
+                alert("Data berhasil disimpan!");
+            } catch (error) {
+                console.error("Error saving data:", error);
+                alert("Gagal menyimpan data: " + (error as Error).message);
+            } finally {
+                if (submitBtn) {
+                    submitBtn.textContent = "Simpan Perubahan";
+                    (submitBtn as HTMLButtonElement).disabled = false;
+                }
+            }
+        });
+
+        loadData();
+    });
 </script>
