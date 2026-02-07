@@ -51,6 +51,9 @@ import DynamicList from "../../../components/admin/forms/DynamicList.astro";
     import { db } from "../../../lib/firebase";
     import { doc, getDoc, setDoc } from "firebase/firestore";
     import { showToast } from "../../../lib/toast";
+    import { AutoSaveManager } from "../../../lib/admin/AutoSave";
+    import { UnsavedChangesManager } from "../../../lib/admin/UnsavedChanges";
+    import { sanitizeHTML } from "../../../lib/security/sanitize";
 
     interface Step {
         title: string;
@@ -64,6 +67,12 @@ import DynamicList from "../../../components/admin/forms/DynamicList.astro";
             "how-to-buy-form",
         ) as HTMLFormElement;
         if (!form) return;
+
+        // Initialize form enhancements
+        const autoSave = new AutoSaveManager("how-to-buy-form", form);
+        const unsavedChanges = new UnsavedChangesManager(form);
+        autoSave.start();
+        unsavedChanges.start();
 
         const container = document.querySelector(
             "#steps-list-container .list-items",
@@ -99,7 +108,7 @@ import DynamicList from "../../../components/admin/forms/DynamicList.astro";
                                                 <input
                                                     type="text"
                                                     name="step_title_${index}"
-                                                    value="${item.title || ""}"
+                                                    value="${sanitizeHTML(item.title || "")}"
                                                     placeholder="Pilih Hewan Qurban"
                                                     class="block w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border border-slate-300 focus:border-sky-500 focus:ring-sky-500"
                                                 />
@@ -127,7 +136,7 @@ import DynamicList from "../../../components/admin/forms/DynamicList.astro";
                                                     rows="3"
                                                     placeholder="Pilih hewan qurban sesuai kebutuhan..."
                                                     class="block w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border border-slate-300 focus:border-sky-500 focus:ring-sky-500"
-                                                >${item.description || ""}</textarea>
+                                                >${sanitizeHTML(item.description || "")}</textarea>
                                             </div>
                                             <div>
                                                 <label class="block text-sm font-medium text-slate-700 mb-1">
@@ -138,7 +147,7 @@ import DynamicList from "../../../components/admin/forms/DynamicList.astro";
                                                     rows="3"
                                                     placeholder="Choose the qurban animal according to your needs..."
                                                     class="block w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border border-slate-300 focus:border-sky-500 focus:ring-sky-500"
-                                                >${item.description_en || ""}</textarea>
+                                                >${sanitizeHTML(item.description_en || "")}</textarea>
                                             </div>
                                         </div>
                                     </div>
@@ -268,6 +277,8 @@ import DynamicList from "../../../components/admin/forms/DynamicList.astro";
                 };
 
                 await setDoc(doc(db, "content", "how_to_buy"), data);
+                autoSave.clearDraft();
+                unsavedChanges.markAsSaved();
                 showToast("Data berhasil disimpan!", "success");
             } catch (error) {
                 console.error("Error saving data:", error);
@@ -281,6 +292,12 @@ import DynamicList from "../../../components/admin/forms/DynamicList.astro";
                     submitBtn.disabled = false;
                 }
             }
+        });
+
+        // Cleanup
+        document.addEventListener("astro:before-swap", () => {
+            autoSave.stop();
+            unsavedChanges.stop();
         });
     });
 </script>

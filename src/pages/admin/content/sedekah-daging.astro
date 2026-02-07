@@ -83,10 +83,18 @@ import DynamicList from "../../../components/admin/forms/DynamicList.astro";
     import { db } from "../../../lib/firebase";
     import { doc, getDoc, setDoc } from "firebase/firestore";
     import { showToast } from "../../../lib/toast";
+    import { AutoSaveManager } from "../../../lib/admin/AutoSave";
+    import { UnsavedChangesManager } from "../../../lib/admin/UnsavedChanges";
 
     document.addEventListener("astro:page-load", async () => {
         const form = document.getElementById("sedekah-form") as HTMLFormElement;
         if (!form) return;
+
+        // Initialize form enhancements
+        const autoSave = new AutoSaveManager("sedekah-daging-form", form);
+        const unsavedChanges = new UnsavedChangesManager(form);
+        autoSave.start();
+        unsavedChanges.start();
 
         const container = document.querySelector(
             "#features-list-container .list-items",
@@ -302,6 +310,8 @@ import DynamicList from "../../../components/admin/forms/DynamicList.astro";
                 };
 
                 await setDoc(doc(db, "content", "sedekah_daging"), data);
+                autoSave.clearDraft();
+                unsavedChanges.markAsSaved();
                 showToast("Data berhasil disimpan!", "success");
             } catch (error) {
                 console.error("Error saving data:", error);
@@ -315,6 +325,12 @@ import DynamicList from "../../../components/admin/forms/DynamicList.astro";
                     submitBtn.disabled = false;
                 }
             }
+        });
+
+        // Cleanup
+        document.addEventListener("astro:before-swap", () => {
+            autoSave.stop();
+            unsavedChanges.stop();
         });
     });
 </script>

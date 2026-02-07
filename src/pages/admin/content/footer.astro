@@ -54,13 +54,17 @@ import ActionBar from "../../../components/admin/layout/ActionBar.astro";
 <script>
     import { createContentForm } from "../../../lib/admin/ContentFormManager";
     import { footerContentSchema } from "../../../schemas/content";
+    import { setupFormEnhancements } from "../../../lib/admin/FormEnhancements";
 
     document.addEventListener("astro:page-load", async () => {
-        await createContentForm({
+        const contentForm = await createContentForm({
             formId: "footer-form",
             collectionName: "content",
             documentId: "footer",
             validationSchema: footerContentSchema,
         });
+
+        // Add auto-save and unsaved changes warning
+        setupFormEnhancements("footer-form", contentForm);
     });
 </script>

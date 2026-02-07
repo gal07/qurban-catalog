@@ -2,7 +2,11 @@ import { getDocument, setDocument } from '../firestore';
 import { FormStateManager, getFormValues, setFormValues } from '../forms';
 import { validateSchema } from '../validation';
 import { showToast } from '../toast';
+import { getCachedDocument, setCachedDocument } from '../FirestoreCache';
+import { createScopedLogger } from '../Logger';
 import type { FieldValidation } from '../../types';
+
+const logger = createScopedLogger('ContentFormManager');
 
 /**
  * Content Form Manager - Unified form handling for admin content pages
@@ -71,6 +75,7 @@ export class ContentFormManager {
      */
     async saveData() {
         try {
+            logger.debug('Saving data', { collection: this.collectionName, docId: this.documentId });
             this.formStateManager.setLoading('Menyimpan...');
 
             // Get form values
@@ -98,8 +103,8 @@ export class ContentFormManager {
                 }
             }
 
-            // Save to Firestore
-            const result = await setDocument(
+            // Save to Firestore (cache will be invalidated automatically)
+            const result = await setCachedDocument(
                 this.collectionName,
                 this.documentId,
                 dataToSave,
@@ -107,6 +112,7 @@ export class ContentFormManager {
             );
 
             if (result.success) {
+                logger.info('Data saved successfully');
                 showToast('Data berhasil disimpan!', 'success');
                 this.originalValues = { ...values };
                 this.formStateManager.setIdle();
@@ -115,6 +121,7 @@ export class ContentFormManager {
                 throw result.error || new Error('Failed to save');
             }
         } catch (error) {
+            logger.error('Failed to save data', { error: (error as Error).message });
             console.error('Error saving data:', error);
             showToast('Gagal menyimpan data: ' + (error as Error).message, 'error');
             this.formStateManager.setIdle();

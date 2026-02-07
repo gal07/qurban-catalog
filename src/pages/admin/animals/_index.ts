@@ -2,6 +2,7 @@ import { db, auth } from '../../../lib/firebase';
 import { collection, getDocs, getDoc, deleteDoc, doc, addDoc, query, limit, startAfter, orderBy, type QueryDocumentSnapshot, type DocumentData } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { showToast } from '../../../lib/toast';
+import { sanitizeURL, sanitizeHTML } from '../../../lib/security/sanitize';
 
 // --- State ---
 let lastVisible: QueryDocumentSnapshot<DocumentData> | null = null;
@@ -248,11 +249,11 @@ export function init() {
 
                 tr.innerHTML = `
                     <td class="px-6 py-4 whitespace-nowrap" data-label="Gambar">
-                        <img src="${imageUrl}" alt="${data.name}" class="h-12 w-12 rounded-lg object-cover bg-slate-100 border border-slate-200" loading="lazy">
+                        <img src="${sanitizeURL(imageUrl)}" alt="${sanitizeHTML(data.name)}" class="h-12 w-12 rounded-lg object-cover bg-slate-100 border border-slate-200" loading="lazy">
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap font-medium text-slate-900" data-label="Nama">${data.name}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-slate-500" data-label="Jenis">${data.type}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-slate-500" data-label="Berat">${data.weight} Kg</td>
+                    <td class="px-6 py-4 whitespace-nowrap font-medium text-slate-900" data-label="Nama">${sanitizeHTML(data.name)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-slate-500" data-label="Jenis">${sanitizeHTML(data.type)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-slate-500" data-label="Berat">${sanitizeHTML(data.weight)} Kg</td>
                     <td class="px-6 py-4 whitespace-nowrap font-mono text-slate-700" data-label="Harga">Rp ${parseInt(data.price || '0').toLocaleString('id-ID')}</td>
                     <td class="px-6 py-4 whitespace-nowrap" data-label="Status">
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${data.available ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">

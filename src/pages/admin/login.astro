@@ -131,8 +131,7 @@ import Layout from "../../layouts/Layout.astro";
     try {
       if (btn) {
         btn.disabled = true;
-        // Keep the lock icon, just change text
-        // Simple way: clear content and set loading state
+        // Safe: static text, no user input
         btn.innerHTML = "Memproses...";
       }
       errorMsg?.classList.add("hidden");
@@ -149,6 +148,7 @@ import Layout from "../../layouts/Layout.astro";
       }
 
       if (btn) {
+        // Safe: static SVG content, no user input
         btn.innerHTML = `
             <span class="absolute left-0 inset-y-0 flex items-center pl-3">
               <svg class="h-5 w-5 text-sky-500 group-hover:text-sky-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">

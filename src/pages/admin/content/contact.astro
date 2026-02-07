@@ -60,15 +60,55 @@ import ActionBar from "../../../components/admin/layout/ActionBar.astro";
 </AdminLayout>
 
 <script>
-    import { createContentForm } from "../../../lib/admin/ContentFormManager";
+    import {
+        createContentForm,
+        ContentFormManager,
+    } from "../../../lib/admin/ContentFormManager";
     import { contactContentSchema } from "../../../schemas/content";
+    import { AutoSaveManager } from "../../../lib/admin/AutoSave";
+    import { UnsavedChangesManager } from "../../../lib/admin/UnsavedChanges";
+    import { showToast } from "../../../lib/toast";
 
     document.addEventListener("astro:page-load", async () => {
-        await createContentForm({
+        const form = document.getElementById("contact-form") as HTMLFormElement;
+        if (!form) return;
+
+        // Initialize auto-save
+        const autoSave = new AutoSaveManager("contact-form", form);
+
+        // Start auto-saving
+        autoSave.start();
+
+        // Initialize unsaved changes warning
+        const unsavedChanges = new UnsavedChangesManager(form);
+        unsavedChanges.start();
+
+        // Create content form
+        const contentForm = await createContentForm({
             formId: "contact-form",
             collectionName: "content",
             documentId: "hubungi_kami",
             validationSchema: contactContentSchema,
+        });
+
+        // Override the saveData method to add our hooks
+        const originalSaveData = contentForm.saveData.bind(contentForm);
+        contentForm.saveData = async function () {
+            unsavedChanges.disable();
+            const result = await originalSaveData();
+            if (result) {
+                // Save was successful
+                autoSave.clearDraft();
+                unsavedChanges.markAsSaved();
+            }
+            unsavedChanges.enable();
+            return result;
+        };
+
+        // Cleanup on page unload
+        document.addEventListener("astro:before-swap", () => {
+            autoSave.stop();
+            unsavedChanges.stop();
         });
     });
 </script>

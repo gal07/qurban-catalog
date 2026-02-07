@@ -110,10 +110,19 @@ import DynamicList from "../../../components/admin/forms/DynamicList.astro";
     import { db } from "../../../lib/firebase";
     import { doc, getDoc, setDoc } from "firebase/firestore";
     import { showToast } from "../../../lib/toast";
+    import { AutoSaveManager } from "../../../lib/admin/AutoSave";
+    import { UnsavedChangesManager } from "../../../lib/admin/UnsavedChanges";
+    import { sanitizeHTML } from "../../../lib/security/sanitize";
 
     document.addEventListener("astro:page-load", async () => {
         const form = document.getElementById("hero-form") as HTMLFormElement;
         if (!form) return;
+
+        // Initialize form enhancements
+        const autoSave = new AutoSaveManager("hero-form", form);
+        const unsavedChanges = new UnsavedChangesManager(form);
+        autoSave.start();
+        unsavedChanges.start();
 
         const container = document.querySelector(
             "#features-list-container .list-items",
@@ -148,7 +157,7 @@ import DynamicList from "../../../components/admin/forms/DynamicList.astro";
                                             <input
                                                 type="text"
                                                 name="feature_${index}"
-                                                value="${item.text || ""}"
+                                                value="${sanitizeHTML(item.text || "")}"
                                                 placeholder="Masukkan fitur..."
                                                 class="block w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border border-slate-300 focus:border-sky-500 focus:ring-sky-500"
                                             />
@@ -160,7 +169,7 @@ import DynamicList from "../../../components/admin/forms/DynamicList.astro";
                                             <input
                                                 type="text"
                                                 name="feature_${index}_en"
-                                                value="${item.text_en || ""}"
+                                                value="${sanitizeHTML(item.text_en || "")}"
                                                 placeholder="Enter feature..."
                                                 class="block w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border border-slate-300 focus:border-sky-500 focus:ring-sky-500"
                                             />
@@ -371,6 +380,8 @@ import DynamicList from "../../../components/admin/forms/DynamicList.astro";
                 };
 
                 await setDoc(doc(db, "content", "hero"), data);
+                autoSave.clearDraft();
+                unsavedChanges.markAsSaved();
                 showToast("Data berhasil disimpan!", "success");
             } catch (error) {
                 console.error("Error saving data:", error);
@@ -384,6 +395,12 @@ import DynamicList from "../../../components/admin/forms/DynamicList.astro";
                     submitBtn.disabled = false;
                 }
             }
+        });
+
+        // Cleanup
+        document.addEventListener("astro:before-swap", () => {
+            autoSave.stop();
+            unsavedChanges.stop();
         });
     });
 </script>
