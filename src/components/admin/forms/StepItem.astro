@@ -1,0 +1,107 @@
+---
+/**
+ * StepItem Component
+ * Individual step item for how-to-buy page
+ */
+
+interface Props {
+    index: number;
+    titleId?: string;
+    titleEn?: string;
+    descriptionId?: string;
+    descriptionEn?: string;
+}
+
+const {
+    index,
+    titleId = "",
+    titleEn = "",
+    descriptionId = "",
+    descriptionEn = "",
+} = Astro.props;
+---
+
+<div class="list-item" data-index={index}>
+    <div class="list-item-content">
+        <div class="space-y-4">
+            <!-- Step Title -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label
+                        class="block text-sm font-medium text-slate-700 mb-1"
+                    >
+                        Langkah {index + 1} - Judul (ID)
+                    </label>
+                    <input
+                        type="text"
+                        name={`step_title_${index}`}
+                        value={titleId}
+                        placeholder="Pilih Hewan Qurban"
+                        class="block w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border border-slate-300 focus:border-sky-500 focus:ring-sky-500"
+                    />
+                </div>
+                <div>
+                    <label
+                        class="block text-sm font-medium text-slate-700 mb-1"
+                    >
+                        Step {index + 1} - Title (EN)
+                    </label>
+                    <input
+                        type="text"
+                        name={`step_title_${index}_en`}
+                        value={titleEn}
+                        placeholder="Choose Qurban Animal"
+                        class="block w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border border-slate-300 focus:border-sky-500 focus:ring-sky-500"
+                    />
+                </div>
+            </div>
+
+            <!-- Step Description -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label
+                        class="block text-sm font-medium text-slate-700 mb-1"
+                    >
+                        Deskripsi (ID)
+                    </label>
+                    <textarea
+                        name={`step_description_${index}`}
+                        rows={3}
+                        placeholder="Pilih hewan qurban sesuai kebutuhan..."
+                        class="block w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border border-slate-300 focus:border-sky-500 focus:ring-sky-500"
+                        >{descriptionId}</textarea
+                    >
+                </div>
+                <div>
+                    <label
+                        class="block text-sm font-medium text-slate-700 mb-1"
+                    >
+                        Description (EN)
+                    </label>
+                    <textarea
+                        name={`step_description_${index}_en`}
+                        rows={3}
+                        placeholder="Choose the qurban animal according to your needs..."
+                        class="block w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border border-slate-300 focus:border-sky-500 focus:ring-sky-500"
+                        >{descriptionEn}</textarea
+                    >
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <button type="button" class="remove-item-btn" title="Remove step">
+        <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+        >
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+    </button>
+</div>

@@ -1,0 +1,60 @@
+---
+interface Props {
+    name: string;
+    label: string;
+    type?: "text" | "email" | "tel" | "url" | "number";
+    value?: string;
+    placeholder?: string;
+    required?: boolean;
+    disabled?: boolean;
+    error?: string;
+    helpText?: string;
+    class?: string;
+}
+
+const {
+    name,
+    label,
+    type = "text",
+    value = "",
+    placeholder = "",
+    required = false,
+    disabled = false,
+    error,
+    helpText,
+    class: className = "",
+} = Astro.props;
+
+const inputId = `input-${name}`;
+const hasError = !!error;
+---
+
+<div class={`form-field ${className}`}>
+    <label for={inputId} class="block text-sm font-medium text-slate-700 mb-1">
+        {label}
+        {required && <span class="text-red-500 ml-1">*</span>}
+    </label>
+
+    <input
+        type={type}
+        id={inputId}
+        name={name}
+        value={value}
+        placeholder={placeholder}
+        required={required}
+        disabled={disabled}
+        class={`block w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border transition-colors ${
+            hasError
+                ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                : "border-slate-300 focus:border-sky-500 focus:ring-sky-500"
+        } ${disabled ? "bg-slate-50 cursor-not-allowed" : ""}`}
+    />
+
+    {error && <p class="field-error text-sm text-red-600 mt-1">{error}</p>}
+
+    {
+        helpText && !error && (
+            <p class="text-xs text-slate-500 mt-1">{helpText}</p>
+        )
+    }
+</div>

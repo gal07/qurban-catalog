@@ -1,36 +1,37 @@
 ---
 import AdminLayout from "../../../layouts/AdminLayout.astro";
+import PageHeader from "../../../components/admin/layout/PageHeader.astro";
+import FormCard from "../../../components/admin/forms/FormCard.astro";
+import SaveButton from "../../../components/admin/forms/SaveButton.astro";
+import ActionBar from "../../../components/admin/layout/ActionBar.astro";
+import DynamicList from "../../../components/admin/forms/DynamicList.astro";
 ---
 
 <AdminLayout title="Ikuti Kami">
-    <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-        <h1 class="text-2xl font-bold text-gray-800 mb-4">
-            Manage Social Media
-        </h1>
-        <p class="text-gray-600 mb-6">
-            Add and manage social media links displayed in the footer.
-        </p>
+    <PageHeader
+        title="Social Media"
+        description="Add and manage social media links displayed in the footer"
+        icon="🔗"
+    />
 
-        <div id="social-links-container" class="space-y-4 mb-6"></div>
-
-        <button
-            type="button"
-            id="add-link-btn"
-            class="mb-6 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors"
+    <form id="social-form">
+        <FormCard
+            title="Social Media Links"
+            description="Manage your social media presence"
         >
-            + Add Social Media
-        </button>
+            <div id="social-list-container">
+                <DynamicList
+                    title="Links"
+                    addButtonText="+ Add Social Media"
+                    emptyMessage="No social links yet. Click the button above to add one."
+                />
+            </div>
+        </FormCard>
 
-        <div class="pt-4 border-t">
-            <button
-                type="button"
-                id="save-btn"
-                class="w-full max-w-lg flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-            >
-                Simpan Perubahan
-            </button>
-        </div>
-    </div>
+        <ActionBar align="right" class="mt-6">
+            <SaveButton />
+        </ActionBar>
+    </form>
 </AdminLayout>
 
 <script>
@@ -38,146 +39,179 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
     import { doc, getDoc, setDoc } from "firebase/firestore";
     import { showToast } from "../../../lib/toast";
 
-    document.addEventListener("astro:page-load", () => {
-        const container = document.getElementById("social-links-container");
-        if (!container) return;
+    const platforms = [
+        "Facebook",
+        "Instagram",
+        "Twitter",
+        "WhatsApp",
+        "YouTube",
+        "TikTok",
+        "LinkedIn",
+    ];
 
-        const addBtn = document.getElementById("add-link-btn");
-        const saveBtn = document.getElementById("save-btn");
+    document.addEventListener("astro:page-load", async () => {
+        const form = document.getElementById("social-form") as HTMLFormElement;
+        if (!form) return;
 
-        const platforms = [
-            "Facebook",
-            "Instagram",
-            "Twitter",
-            "WhatsApp",
-            "YouTube",
-            "TikTok",
-            "LinkedIn",
-        ];
+        const container = document.querySelector(
+            "#social-list-container .list-items",
+        ) as HTMLElement;
+        const addButton = document.querySelector(
+            "#social-list-container .add-item-btn",
+        ) as HTMLButtonElement;
+        const emptyState = document.querySelector(
+            "#social-list-container .empty-state",
+        ) as HTMLElement;
+
+        if (!container || !addButton || !emptyState) return;
 
         let socialLinks: Array<{ platform: string; url: string }> = [];
 
-        // Load data
-        async function loadData() {
-            try {
-                const docRef = doc(db, "content", "social");
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    socialLinks = data.links || [];
-                }
-
-                renderLinks();
-            } catch (error) {
-                console.error("Error loading data:", error);
-                showToast("Gagal memuat data. Silakan coba lagi.", "error");
-            }
-        }
-
         function renderLinks() {
-            if (!container) return;
-            container.innerHTML = "";
+            if (socialLinks.length === 0) {
+                container.innerHTML = "";
+                emptyState.classList.remove("hidden");
+            } else {
+                emptyState.classList.add("hidden");
+                container.innerHTML = socialLinks
+                    .map((item, index) => {
+                        return `
+                            <div class="list-item" data-index="${index}">
+                                <div class="list-item-content">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-slate-700 mb-1">
+                                                Platform
+                                            </label>
+                                            <select
+                                                name="platform_${index}"
+                                                class="block w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border border-slate-300 focus:border-sky-500 focus:ring-sky-500"
+                                            >
+                                                <option value="">Select platform...</option>
+                                                ${platforms
+                                                    .map(
+                                                        (p) =>
+                                                            `<option value="${p}" ${p === item.platform ? "selected" : ""}>${p}</option>`,
+                                                    )
+                                                    .join("")}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-slate-700 mb-1">
+                                                URL
+                                            </label>
+                                            <input
+                                                type="url"
+                                                name="url_${index}"
+                                                value="${item.url || ""}"
+                                                placeholder="https://..."
+                                                class="block w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border border-slate-300 focus:border-sky-500 focus:ring-sky-500"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <button
+                                    type="button"
+                                    class="remove-item-btn"
+                                    data-index="${index}"
+                                    title="Remove social link"
+                                >
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        `;
+                    })
+                    .join("");
 
-            socialLinks.forEach((link, index) => {
-                const linkDiv = document.createElement("div");
-                linkDiv.className =
-                    "flex gap-4 items-start p-4 bg-gray-50 rounded-lg";
-                linkDiv.innerHTML = `
-                <div class="flex-1">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Platform</label>
-                    <select 
-                        data-index="${index}" 
-                        data-field="platform"
-                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                    >
-                        ${platforms.map((p) => `<option value="${p}" ${p === link.platform ? "selected" : ""}>${p}</option>`).join("")}
-                    </select>
-                </div>
-                <div class="flex-[2]">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">URL</label>
-                    <input 
-                        type="url" 
-                        data-index="${index}" 
-                        data-field="url"
-                        value="${link.url}"
-                        placeholder="https://..."
-                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                    />
-                </div>
-                <div class="pt-6">
-                    <button 
-                        type="button" 
-                        data-index="${index}"
-                        class="remove-btn px-3 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-                    >
-                        Remove
-                    </button>
-                </div>
-            `;
-                container.appendChild(linkDiv);
-            });
-
-            // Attach event listeners
-            container.querySelectorAll("select, input").forEach((el) => {
-                el.addEventListener("change", handleChange);
-            });
-
-            container.querySelectorAll(".remove-btn").forEach((btn) => {
-                btn.addEventListener("click", handleRemove);
-            });
-        }
-
-        function handleChange(e: Event) {
-            const target = e.target as HTMLInputElement | HTMLSelectElement;
-            const index = parseInt(target.dataset.index || "0");
-            const field = target.dataset.field as "platform" | "url";
-
-            if (socialLinks[index]) {
-                socialLinks[index][field] = target.value;
+                // Attach remove button listeners
+                container
+                    .querySelectorAll(".remove-item-btn")
+                    .forEach((btn) => {
+                        btn.addEventListener("click", (e) => {
+                            const index = parseInt(
+                                (e.currentTarget as HTMLElement).dataset
+                                    .index || "0",
+                            );
+                            socialLinks.splice(index, 1);
+                            renderLinks();
+                        });
+                    });
             }
         }
 
-        function handleRemove(e: Event) {
-            const target = e.target as HTMLButtonElement;
-            const index = parseInt(target.dataset.index || "0");
-            socialLinks.splice(index, 1);
+        // Add button handler
+        addButton.addEventListener("click", () => {
+            socialLinks.push({ platform: "", url: "" });
             renderLinks();
-        }
+        });
 
-        if (addBtn) {
-            addBtn.addEventListener("click", () => {
-                socialLinks.push({ platform: platforms[0], url: "" });
+        // Load data from Firestore
+        try {
+            const docRef = doc(db, "content", "social");
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                socialLinks = data.links || [];
                 renderLinks();
-            });
+            }
+        } catch (error) {
+            console.error("Error loading data:", error);
+            showToast("Gagal memuat data. Silakan coba lagi.", "error");
         }
 
-        if (saveBtn) {
-            saveBtn.addEventListener("click", async () => {
-                saveBtn.textContent = "Menyimpan...";
-                (saveBtn as HTMLButtonElement).disabled = true;
+        // Handle form submit
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
 
-                try {
-                    const data = {
-                        links: socialLinks,
-                        updatedAt: new Date().toISOString(),
-                    };
+            const submitBtn = form.querySelector(
+                'button[type="submit"]',
+            ) as HTMLButtonElement;
+            if (submitBtn) {
+                submitBtn.textContent = "Menyimpan...";
+                submitBtn.disabled = true;
+            }
 
-                    await setDoc(doc(db, "content", "social"), data);
-                    showToast("Data berhasil disimpan!", "success");
-                } catch (error) {
-                    console.error("Error saving data:", error);
-                    showToast(
-                        "Gagal menyimpan data: " + (error as Error).message,
-                        "error",
-                    );
-                } finally {
-                    saveBtn.textContent = "Simpan Perubahan";
-                    (saveBtn as HTMLButtonElement).disabled = false;
+            try {
+                // Collect data from form
+                const links = socialLinks
+                    .map((_, index) => {
+                        const platformInput = form.querySelector(
+                            `[name="platform_${index}"]`,
+                        ) as HTMLSelectElement;
+                        const urlInput = form.querySelector(
+                            `[name="url_${index}"]`,
+                        ) as HTMLInputElement;
+
+                        return {
+                            platform: platformInput?.value || "",
+                            url: urlInput?.value || "",
+                        };
+                    })
+                    .filter((link) => link.platform && link.url);
+
+                const data = {
+                    links,
+                    updatedAt: new Date().toISOString(),
+                };
+
+                await setDoc(doc(db, "content", "social"), data);
+                showToast("Data berhasil disimpan!", "success");
+            } catch (error) {
+                console.error("Error saving data:", error);
+                showToast(
+                    "Gagal menyimpan data: " + (error as Error).message,
+                    "error",
+                );
+            } finally {
+                if (submitBtn) {
+                    submitBtn.textContent = "Simpan Perubahan";
+                    submitBtn.disabled = false;
                 }
-            });
-        }
-
-        loadData();
+            }
+        });
     });
 </script>

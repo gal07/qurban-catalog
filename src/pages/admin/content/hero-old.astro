@@ -1,0 +1,510 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+---
+
+<AdminLayout title="First Screen">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4">
+            Manage Hero Section
+        </h1>
+        <p class="text-gray-600 mb-6">
+            Edit the first screen (Hero) content displayed on the homepage.
+        </p>
+
+        <form id="hero-form" class="space-y-6 max-w-2xl">
+            <!-- Badge -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label
+                        for="badge"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Badge Text (ID)
+                    </label>
+                    <input
+                        type="text"
+                        id="badge"
+                        name="badge"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Edisi Idul Adha 2026"
+                    />
+                </div>
+                <div>
+                    <label
+                        for="badge_en"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Badge Text (EN)
+                    </label>
+                    <input
+                        type="text"
+                        id="badge_en"
+                        name="badge_en"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Eid Al-Adha Edition 2026"
+                    />
+                </div>
+            </div>
+
+            <!-- Title -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label
+                        for="title"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Title (ID)
+                    </label>
+                    <input
+                        type="text"
+                        id="title"
+                        name="title"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Qurban Sempurna untuk"
+                    />
+                </div>
+                <div>
+                    <label
+                        for="title_en"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Title (EN)
+                    </label>
+                    <input
+                        type="text"
+                        id="title_en"
+                        name="title_en"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Perfect Qurban for"
+                    />
+                </div>
+            </div>
+
+            <!-- Title Highlight -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label
+                        for="titleHighlight"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Title Highlight (ID)
+                    </label>
+                    <input
+                        type="text"
+                        id="titleHighlight"
+                        name="titleHighlight"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Ibadah Terbaik"
+                    />
+                </div>
+                <div>
+                    <label
+                        for="titleHighlight_en"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Title Highlight (EN)
+                    </label>
+                    <input
+                        type="text"
+                        id="titleHighlight_en"
+                        name="titleHighlight_en"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Best Worship"
+                    />
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label
+                        for="description"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Description (ID)
+                    </label>
+                    <textarea
+                        id="description"
+                        name="description"
+                        rows="3"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Kami menyediakan hewan qurban..."
+                    ></textarea>
+                </div>
+                <div>
+                    <label
+                        for="description_en"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Description (EN)
+                    </label>
+                    <textarea
+                        id="description_en"
+                        name="description_en"
+                        rows="3"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="We provide premium qurban animals..."
+                    ></textarea>
+                </div>
+            </div>
+
+            <!-- Catalog Title -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label
+                        for="catalogTitle"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Catalog Title (ID)
+                    </label>
+                    <input
+                        type="text"
+                        id="catalogTitle"
+                        name="catalogTitle"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Katalog Hewan Qurban"
+                    />
+                </div>
+                <div>
+                    <label
+                        for="catalogTitle_en"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Catalog Title (EN)
+                    </label>
+                    <input
+                        type="text"
+                        id="catalogTitle_en"
+                        name="catalogTitle_en"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Qurban Animals Catalog"
+                    />
+                </div>
+            </div>
+
+            <!-- Catalog Subtitle -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label
+                        for="catalogSubtitle"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Catalog Subtitle (ID)
+                    </label>
+                    <textarea
+                        id="catalogSubtitle"
+                        name="catalogSubtitle"
+                        rows="2"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Pilih hewan qurban terbaik Anda..."
+                    ></textarea>
+                </div>
+                <div>
+                    <label
+                        for="catalogSubtitle_en"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Catalog Subtitle (EN)
+                    </label>
+                    <textarea
+                        id="catalogSubtitle_en"
+                        name="catalogSubtitle_en"
+                        rows="2"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Choose your best qurban animal..."
+                    ></textarea>
+                </div>
+            </div>
+            <p class="mt-1 text-sm text-gray-500">
+                Teks ini akan muncul di bawah judul "Katalog Hewan Qurban".
+            </p>
+
+            <div>
+                <div class="flex justify-between items-center mb-4">
+                    <label class="block text-sm font-medium text-gray-700"
+                        >Features</label
+                    >
+                    <button
+                        type="button"
+                        id="add-feature-btn"
+                        class="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors"
+                    >
+                        + Add Feature
+                    </button>
+                </div>
+                <div id="features-container" class="space-y-3"></div>
+            </div>
+
+            <div class="pt-4 border-t">
+                <button
+                    type="submit"
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                >
+                    Simpan Perubahan
+                </button>
+            </div>
+        </form>
+    </div>
+</AdminLayout>
+
+<script>
+    import { db } from "../../../lib/firebase";
+    import { doc, getDoc, setDoc } from "firebase/firestore";
+    import { showToast } from "../../../lib/toast";
+
+    interface Feature {
+        id: string;
+        en: string;
+    }
+
+    document.addEventListener("astro:page-load", () => {
+        const form = document.getElementById("hero-form") as HTMLFormElement;
+        if (!form) return;
+
+        // ID Inputs
+        const badgeInput = document.getElementById("badge") as HTMLInputElement;
+        const titleInput = document.getElementById("title") as HTMLInputElement;
+        const titleHighlightInput = document.getElementById(
+            "titleHighlight",
+        ) as HTMLInputElement;
+        const descriptionInput = document.getElementById(
+            "description",
+        ) as HTMLTextAreaElement;
+        const catalogTitleInput = document.getElementById(
+            "catalogTitle",
+        ) as HTMLInputElement;
+        const catalogSubtitleInput = document.getElementById(
+            "catalogSubtitle",
+        ) as HTMLTextAreaElement;
+
+        // EN Inputs
+        const badgeEnInput = document.getElementById(
+            "badge_en",
+        ) as HTMLInputElement;
+        const titleEnInput = document.getElementById(
+            "title_en",
+        ) as HTMLInputElement;
+        const titleHighlightEnInput = document.getElementById(
+            "titleHighlight_en",
+        ) as HTMLInputElement;
+        const descriptionEnInput = document.getElementById(
+            "description_en",
+        ) as HTMLTextAreaElement;
+        const catalogTitleEnInput = document.getElementById(
+            "catalogTitle_en",
+        ) as HTMLInputElement;
+        const catalogSubtitleEnInput = document.getElementById(
+            "catalogSubtitle_en",
+        ) as HTMLTextAreaElement;
+
+        const featuresContainer = document.getElementById("features-container");
+        const addFeatureBtn = document.getElementById("add-feature-btn");
+
+        let features: Feature[] = [];
+
+        // Load data
+        async function loadData() {
+            // ... (function body same as before, but accessing inputs dynamically if needed? inputs are captured in closure)
+            // Check if elements exist before using them, which they should if captured inside page-load
+            try {
+                const docRef = doc(db, "content", "hero");
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+
+                    // Load ID (fallback to legacy fields if necessary)
+                    if (badgeInput)
+                        badgeInput.value = data.badge_id || data.badge || "";
+                    if (titleInput)
+                        titleInput.value = data.title_id || data.title || "";
+                    if (titleHighlightInput)
+                        titleHighlightInput.value =
+                            data.titleHighlight_id || data.titleHighlight || "";
+                    if (descriptionInput)
+                        descriptionInput.value =
+                            data.description_id || data.description || "";
+                    if (catalogTitleInput)
+                        catalogTitleInput.value =
+                            data.catalogTitle_id || data.catalogTitle || "";
+                    if (catalogSubtitleInput)
+                        catalogSubtitleInput.value =
+                            data.catalogSubtitle_id ||
+                            data.catalogSubtitle ||
+                            "";
+
+                    // Load EN
+                    if (badgeEnInput) badgeEnInput.value = data.badge_en || "";
+                    if (titleEnInput) titleEnInput.value = data.title_en || "";
+                    if (titleHighlightEnInput)
+                        titleHighlightEnInput.value =
+                            data.titleHighlight_en || "";
+                    if (descriptionEnInput)
+                        descriptionEnInput.value = data.description_en || "";
+                    if (catalogTitleEnInput)
+                        catalogTitleEnInput.value = data.catalogTitle_en || "";
+                    if (catalogSubtitleEnInput)
+                        catalogSubtitleEnInput.value =
+                            data.catalogSubtitle_en || "";
+
+                    // Handle features migration (string[] -> Feature[])
+                    const rawFeatures = data.features || [];
+                    if (Array.isArray(rawFeatures) && rawFeatures.length > 0) {
+                        if (typeof rawFeatures[0] === "string") {
+                            features = rawFeatures.map((f: string) => ({
+                                id: f,
+                                en: "",
+                            }));
+                        } else {
+                            features = rawFeatures;
+                        }
+                    } else {
+                        features = [];
+                    }
+                }
+
+                renderFeatures();
+            } catch (error) {
+                console.error("Error loading data:", error);
+                showToast("Gagal memuat data. Silakan coba lagi.", "error");
+            }
+        }
+
+        function renderFeatures() {
+            if (!featuresContainer) return;
+            featuresContainer.innerHTML = "";
+
+            features.forEach((feature, index) => {
+                const featureDiv = document.createElement("div");
+                featureDiv.className =
+                    "flex gap-2 items-start bg-gray-50 p-3 rounded-md";
+                featureDiv.innerHTML = `
+                <div class="flex-1 space-y-2">
+                    <input 
+                        type="text" 
+                        data-index="${index}"
+                        data-lang="id"
+                        value="${feature.id}"
+                        placeholder="Feature (ID)"
+                        class="feature-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                    />
+                    <input 
+                        type="text" 
+                        data-index="${index}"
+                        data-lang="en"
+                        value="${feature.en}"
+                        placeholder="Feature (EN)"
+                        class="feature-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                    />
+                </div>
+                <button 
+                    type="button" 
+                    data-index="${index}"
+                    class="remove-feature-btn px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors mt-1"
+                >
+                    Remove
+                </button>
+            `;
+                featuresContainer.appendChild(featureDiv);
+            });
+
+            // Attach event listeners
+            featuresContainer
+                .querySelectorAll(".feature-input")
+                .forEach((el) => {
+                    el.addEventListener("change", handleFeatureChange);
+                });
+
+            featuresContainer
+                .querySelectorAll(".remove-feature-btn")
+                .forEach((btn) => {
+                    btn.addEventListener("click", handleRemoveFeature);
+                });
+        }
+
+        function handleFeatureChange(e: Event) {
+            const target = e.target as HTMLInputElement;
+            const index = parseInt(target.dataset.index || "0");
+            const lang = target.dataset.lang as "id" | "en";
+
+            if (features[index]) {
+                features[index][lang] = target.value;
+            }
+        }
+
+        function handleRemoveFeature(e: Event) {
+            const target = e.target as HTMLButtonElement;
+            const index = parseInt(target.dataset.index || "0");
+            features.splice(index, 1);
+            renderFeatures();
+        }
+
+        if (addFeatureBtn) {
+            addFeatureBtn.addEventListener("click", () => {
+                features.push({ id: "", en: "" });
+                renderFeatures();
+            });
+        }
+
+        if (form) {
+            form.addEventListener("submit", async (e) => {
+                e.preventDefault();
+
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.textContent = "Menyimpan...";
+                    (submitBtn as HTMLButtonElement).disabled = true;
+                }
+
+                try {
+                    const data = {
+                        // ID (Primary)
+                        badge_id: badgeInput.value,
+                        title_id: titleInput.value,
+                        titleHighlight_id: titleHighlightInput.value,
+                        description_id: descriptionInput.value,
+                        catalogTitle_id: catalogTitleInput.value,
+                        catalogSubtitle_id: catalogSubtitleInput.value,
+
+                        // Legacy fields for backward compatibility (optional, but good for safety)
+                        badge: badgeInput.value,
+                        title: titleInput.value,
+                        titleHighlight: titleHighlightInput.value,
+                        description: descriptionInput.value,
+                        catalogTitle: catalogTitleInput.value,
+                        catalogSubtitle: catalogSubtitleInput.value,
+
+                        // EN
+                        badge_en: badgeEnInput.value,
+                        title_en: titleEnInput.value,
+                        titleHighlight_en: titleHighlightEnInput.value,
+                        description_en: descriptionEnInput.value,
+                        catalogTitle_en: catalogTitleEnInput.value,
+                        catalogSubtitle_en: catalogSubtitleEnInput.value,
+
+                        features: features.filter(
+                            (f) => f.id.trim() !== "" || f.en.trim() !== "",
+                        ),
+                        updatedAt: new Date().toISOString(),
+                    };
+
+                    await setDoc(doc(db, "content", "hero"), data);
+                    showToast("Data berhasil disimpan!", "success");
+                } catch (error) {
+                    console.error("Error saving data:", error);
+                    showToast(
+                        "Gagal menyimpan data: " + (error as Error).message,
+                        "error",
+                    );
+                } finally {
+                    if (submitBtn) {
+                        submitBtn.textContent = "Simpan Perubahan";
+                        (submitBtn as HTMLButtonElement).disabled = false;
+                    }
+                }
+            });
+        }
+
+        loadData();
+    });
+</script>

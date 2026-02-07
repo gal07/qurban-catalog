@@ -1,0 +1,32 @@
+---
+interface Props {
+    title?: string;
+    description?: string;
+    class?: string;
+}
+
+const { title, description, class: className = "" } = Astro.props;
+---
+
+<div
+    class={`form-card bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden ${className}`}
+>
+    {
+        (title || description) && (
+            <div class="card-header px-6 py-4 border-b border-slate-200 bg-slate-50">
+                {title && (
+                    <h3 class="text-lg font-semibold text-slate-900">
+                        {title}
+                    </h3>
+                )}
+                {description && (
+                    <p class="text-sm text-slate-600 mt-1">{description}</p>
+                )}
+            </div>
+        )
+    }
+
+    <div class="card-body px-6 py-5">
+        <slot />
+    </div>
+</div>

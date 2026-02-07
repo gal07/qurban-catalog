@@ -1,0 +1,21 @@
+---
+interface Props {
+    align?: "left" | "right" | "between" | "center";
+    class?: string;
+}
+
+const { align = "right", class: className = "" } = Astro.props;
+
+const alignClasses = {
+    left: "justify-start",
+    right: "justify-end",
+    between: "justify-between",
+    center: "justify-center",
+};
+---
+
+<div
+    class={`action-bar flex items-center gap-3 ${alignClasses[align]} ${className}`}
+>
+    <slot />
+</div>

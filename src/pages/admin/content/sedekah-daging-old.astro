@@ -1,0 +1,485 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+---
+
+<AdminLayout title="Sedekah Daging">
+    <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4">
+            Manage Sedekah Daging
+        </h1>
+        <p class="text-gray-600 mb-6">
+            Edit the content of the Sedekah Daging section.
+        </p>
+
+        <form id="sedekah-form" class="space-y-6 max-w-2xl">
+            <!-- Badge -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label
+                        for="badge"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Badge Text (ID)
+                    </label>
+                    <input
+                        type="text"
+                        id="badge"
+                        name="badge"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Program Spesial"
+                    />
+                </div>
+                <div>
+                    <label
+                        for="badge_en"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Badge Text (EN)
+                    </label>
+                    <input
+                        type="text"
+                        id="badge_en"
+                        name="badge_en"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Special Program"
+                    />
+                </div>
+            </div>
+
+            <!-- Title -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label
+                        for="title"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Title (ID)
+                    </label>
+                    <input
+                        type="text"
+                        id="title"
+                        name="title"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Sedekah Daging"
+                    />
+                </div>
+                <div>
+                    <label
+                        for="title_en"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Title (EN)
+                    </label>
+                    <input
+                        type="text"
+                        id="title_en"
+                        name="title_en"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Meat Alms"
+                    />
+                </div>
+            </div>
+
+            <!-- Title Highlight -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label
+                        for="titleHighlight"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Title Highlight (ID)
+                    </label>
+                    <input
+                        type="text"
+                        id="titleHighlight"
+                        name="titleHighlight"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Sebar Bahagia"
+                    />
+                </div>
+                <div>
+                    <label
+                        for="titleHighlight_en"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Title Highlight (EN)
+                    </label>
+                    <input
+                        type="text"
+                        id="titleHighlight_en"
+                        name="titleHighlight_en"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Spread Happiness"
+                    />
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label
+                        for="description"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Description (ID)
+                    </label>
+                    <textarea
+                        id="description"
+                        name="description"
+                        rows="4"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Salurkan kebahagiaan Idul Adha..."
+                    ></textarea>
+                </div>
+                <div>
+                    <label
+                        for="description_en"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Description (EN)
+                    </label>
+                    <textarea
+                        id="description_en"
+                        name="description_en"
+                        rows="4"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Distribute Eid Al-Adha happiness..."
+                    ></textarea>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label
+                        for="buttonText"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Button Text (ID)
+                    </label>
+                    <input
+                        type="text"
+                        id="buttonText"
+                        name="buttonText"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Ikut Sedekah Daging"
+                    />
+                </div>
+                <div>
+                    <label
+                        for="buttonText_en"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Button Text (EN)
+                    </label>
+                    <input
+                        type="text"
+                        id="buttonText_en"
+                        name="buttonText_en"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="Join Meat Alms"
+                    />
+                </div>
+                <div>
+                    <label
+                        for="buttonUrl"
+                        class="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                        Button URL
+                    </label>
+                    <input
+                        type="text"
+                        id="buttonUrl"
+                        name="buttonUrl"
+                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        placeholder="https://memberimakna.id"
+                    />
+                </div>
+            </div>
+
+            <div>
+                <label
+                    for="imageUrl"
+                    class="block text-sm font-medium text-gray-700 mb-1"
+                >
+                    Image URL
+                </label>
+                <input
+                    type="text"
+                    id="imageUrl"
+                    name="imageUrl"
+                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                    placeholder="/sedekah-daging.png"
+                />
+                <p class="text-xs text-gray-500 mt-1">
+                    Path to image in public folder or external URL.
+                </p>
+            </div>
+
+            <div>
+                <div class="flex justify-between items-center mb-4">
+                    <label class="block text-sm font-medium text-gray-700"
+                        >Trust Indicators</label
+                    >
+                    <button
+                        type="button"
+                        id="add-indicator-btn"
+                        class="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors"
+                    >
+                        + Add Indicator
+                    </button>
+                </div>
+                <div id="indicators-container" class="space-y-3"></div>
+            </div>
+
+            <div class="pt-4 border-t">
+                <button
+                    type="submit"
+                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                >
+                    Simpan Perubahan
+                </button>
+            </div>
+        </form>
+    </div>
+</AdminLayout>
+
+<script>
+    import { db } from "../../../lib/firebase";
+    import { doc, getDoc, setDoc } from "firebase/firestore";
+    import { showToast } from "../../../lib/toast";
+
+    interface Indicator {
+        id: string;
+        en: string;
+    }
+
+    document.addEventListener("astro:page-load", () => {
+        const form = document.getElementById("sedekah-form") as HTMLFormElement;
+        if (!form) return;
+
+        // ID Inputs
+        const badgeInput = document.getElementById("badge") as HTMLInputElement;
+        const titleInput = document.getElementById("title") as HTMLInputElement;
+        const titleHighlightInput = document.getElementById(
+            "titleHighlight",
+        ) as HTMLInputElement;
+        const descriptionInput = document.getElementById(
+            "description",
+        ) as HTMLTextAreaElement;
+        const buttonTextInput = document.getElementById(
+            "buttonText",
+        ) as HTMLInputElement;
+
+        // EN Inputs
+        const badgeEnInput = document.getElementById(
+            "badge_en",
+        ) as HTMLInputElement;
+        const titleEnInput = document.getElementById(
+            "title_en",
+        ) as HTMLInputElement;
+        const titleHighlightEnInput = document.getElementById(
+            "titleHighlight_en",
+        ) as HTMLInputElement;
+        const descriptionEnInput = document.getElementById(
+            "description_en",
+        ) as HTMLTextAreaElement;
+        const buttonTextEnInput = document.getElementById(
+            "buttonText_en",
+        ) as HTMLInputElement;
+
+        const buttonUrlInput = document.getElementById(
+            "buttonUrl",
+        ) as HTMLInputElement;
+        const imageUrlInput = document.getElementById(
+            "imageUrl",
+        ) as HTMLInputElement;
+        const indicatorsContainer = document.getElementById(
+            "indicators-container",
+        );
+        const addIndicatorBtn = document.getElementById("add-indicator-btn");
+
+        let trustIndicators: Indicator[] = [];
+
+        // Load data
+        async function loadData() {
+            try {
+                const docRef = doc(db, "content", "sedekah_daging");
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+
+                    // Load ID
+                    if (badgeInput) badgeInput.value = data.badge || "";
+                    if (titleInput) titleInput.value = data.title || "";
+                    if (titleHighlightInput)
+                        titleHighlightInput.value = data.titleHighlight || "";
+                    if (descriptionInput)
+                        descriptionInput.value = data.description || "";
+                    if (buttonTextInput)
+                        buttonTextInput.value = data.buttonText || "";
+                    if (buttonUrlInput)
+                        buttonUrlInput.value = data.buttonUrl || "";
+                    if (imageUrlInput)
+                        imageUrlInput.value = data.imageUrl || "";
+
+                    // Load EN
+                    if (badgeEnInput) badgeEnInput.value = data.badge_en || "";
+                    if (titleEnInput) titleEnInput.value = data.title_en || "";
+                    if (titleHighlightEnInput)
+                        titleHighlightEnInput.value =
+                            data.titleHighlight_en || "";
+                    if (descriptionEnInput)
+                        descriptionEnInput.value = data.description_en || "";
+                    if (buttonTextEnInput)
+                        buttonTextEnInput.value = data.buttonText_en || "";
+
+                    // Handle indicators migration
+                    const rawIndicators = data.trustIndicators || [];
+                    if (rawIndicators.length > 0) {
+                        if (typeof rawIndicators[0] === "string") {
+                            trustIndicators = rawIndicators.map(
+                                (s: string) => ({
+                                    id: s,
+                                    en: "",
+                                }),
+                            );
+                        } else {
+                            trustIndicators = rawIndicators;
+                        }
+                    } else {
+                        trustIndicators = [];
+                    }
+                }
+
+                renderIndicators();
+            } catch (error) {
+                console.error("Error loading data:", error);
+                showToast("Gagal memuat data. Silakan coba lagi.", "error");
+            }
+        }
+
+        function renderIndicators() {
+            if (!indicatorsContainer) return;
+            indicatorsContainer.innerHTML = "";
+
+            trustIndicators.forEach((indicator, index) => {
+                const div = document.createElement("div");
+                div.className =
+                    "flex gap-2 items-start bg-gray-50 p-3 rounded-md";
+                div.innerHTML = `
+                    <div class="flex-1 space-y-2">
+                        <input 
+                            type="text" 
+                            data-index="${index}"
+                            data-lang="id"
+                            value="${indicator.id}"
+                            placeholder="Indicator (ID)"
+                            class="indicator-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        />
+                        <input 
+                            type="text" 
+                            data-index="${index}"
+                            data-lang="en"
+                            value="${indicator.en}"
+                            placeholder="Indicator (EN)"
+                            class="indicator-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
+                        />
+                    </div>
+                    <button 
+                        type="button" 
+                        data-index="${index}"
+                        class="remove-indicator-btn px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 transition-colors mt-1"
+                    >
+                        Remove
+                    </button>
+                `;
+                indicatorsContainer.appendChild(div);
+            });
+
+            // Attach event listeners
+            indicatorsContainer
+                .querySelectorAll(".indicator-input")
+                .forEach((el) => {
+                    el.addEventListener("change", handleIndicatorChange);
+                });
+
+            indicatorsContainer
+                .querySelectorAll(".remove-indicator-btn")
+                .forEach((btn) => {
+                    btn.addEventListener("click", handleRemoveIndicator);
+                });
+        }
+
+        function handleIndicatorChange(e: Event) {
+            const target = e.target as HTMLInputElement;
+            const index = parseInt(target.dataset.index || "0");
+            const lang = target.dataset.lang as "id" | "en";
+
+            if (trustIndicators[index]) {
+                trustIndicators[index][lang] = target.value;
+            }
+        }
+
+        function handleRemoveIndicator(e: Event) {
+            const target = e.target as HTMLButtonElement;
+            const index = parseInt(target.dataset.index || "0");
+            trustIndicators.splice(index, 1);
+            renderIndicators();
+        }
+
+        addIndicatorBtn?.addEventListener("click", () => {
+            trustIndicators.push({ id: "", en: "" });
+            renderIndicators();
+        });
+
+        form?.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.textContent = "Menyimpan...";
+                (submitBtn as HTMLButtonElement).disabled = true;
+            }
+
+            try {
+                const data = {
+                    badge: badgeInput.value,
+                    title: titleInput.value,
+                    titleHighlight: titleHighlightInput.value,
+                    description: descriptionInput.value,
+                    buttonText: buttonTextInput.value,
+
+                    badge_en: badgeEnInput.value,
+                    title_en: titleEnInput.value,
+                    titleHighlight_en: titleHighlightEnInput.value,
+                    description_en: descriptionEnInput.value,
+                    buttonText_en: buttonTextEnInput.value,
+
+                    buttonUrl: buttonUrlInput.value,
+                    imageUrl: imageUrlInput.value,
+                    trustIndicators: trustIndicators.filter(
+                        (f) => f.id.trim() !== "" || f.en.trim() !== "",
+                    ),
+                    updatedAt: new Date().toISOString(),
+                };
+
+                await setDoc(doc(db, "content", "sedekah_daging"), data);
+                showToast("Data berhasil disimpan!", "success");
+            } catch (error) {
+                console.error("Error saving data:", error);
+                showToast(
+                    "Gagal menyimpan data: " + (error as Error).message,
+                    "error",
+                );
+            } finally {
+                if (submitBtn) {
+                    submitBtn.textContent = "Simpan Perubahan";
+                    (submitBtn as HTMLButtonElement).disabled = false;
+                }
+            }
+        });
+
+        loadData();
+    });
+</script>

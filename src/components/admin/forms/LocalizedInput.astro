@@ -1,0 +1,153 @@
+---
+interface Props {
+    name: string;
+    labelId: string;
+    labelEn: string;
+    type?: "text" | "textarea" | "tel" | "email" | "url" | "number";
+    valueId?: string;
+    valueEn?: string;
+    placeholderId?: string;
+    placeholderEn?: string;
+    required?: boolean;
+    disabled?: boolean;
+    errorId?: string;
+    errorEn?: string;
+    helpText?: string;
+    rows?: number;
+    class?: string;
+}
+
+const {
+    name,
+    labelId,
+    labelEn,
+    type = "text",
+    valueId = "",
+    valueEn = "",
+    placeholderId = "",
+    placeholderEn = "",
+    required = false,
+    disabled = false,
+    errorId,
+    errorEn,
+    helpText,
+    rows = 4,
+    class: className = "",
+} = Astro.props;
+
+const nameId = `${name}`;
+const nameEn = `${name}_en`;
+const hasErrorId = !!errorId;
+const hasErrorEn = !!errorEn;
+---
+
+<div
+    class={`localized-input grid grid-cols-1 md:grid-cols-2 gap-4 ${className}`}
+>
+    <!-- Indonesian Field -->
+    <div class="form-field">
+        <label
+            for={nameId}
+            class="block text-sm font-medium text-slate-700 mb-1"
+        >
+            {labelId}
+            {required && <span class="text-red-500 ml-1">*</span>}
+        </label>
+
+        {
+            type === "textarea" ? (
+                <textarea
+                    id={nameId}
+                    name={nameId}
+                    rows={rows}
+                    placeholder={placeholderId}
+                    required={required}
+                    disabled={disabled}
+                    class={`block w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border transition-colors ${
+                        hasErrorId
+                            ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                            : "border-slate-300 focus:border-sky-500 focus:ring-sky-500"
+                    } ${disabled ? "bg-slate-50 cursor-not-allowed" : ""}`}
+                >
+                    {valueId}
+                </textarea>
+            ) : (
+                <input
+                    type={type}
+                    id={nameId}
+                    name={nameId}
+                    value={valueId}
+                    placeholder={placeholderId}
+                    required={required}
+                    disabled={disabled}
+                    class={`block w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border transition-colors ${
+                        hasErrorId
+                            ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                            : "border-slate-300 focus:border-sky-500 focus:ring-sky-500"
+                    } ${disabled ? "bg-slate-50 cursor-not-allowed" : ""}`}
+                />
+            )
+        }
+
+        {
+            errorId && (
+                <p class="field-error text-sm text-red-600 mt-1">{errorId}</p>
+            )
+        }
+    </div>
+
+    <!-- English Field -->
+    <div class="form-field">
+        <label
+            for={nameEn}
+            class="block text-sm font-medium text-slate-700 mb-1"
+        >
+            {labelEn}
+        </label>
+
+        {
+            type === "textarea" ? (
+                <textarea
+                    id={nameEn}
+                    name={nameEn}
+                    rows={rows}
+                    placeholder={placeholderEn}
+                    disabled={disabled}
+                    class={`block w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border transition-colors ${
+                        hasErrorEn
+                            ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                            : "border-slate-300 focus:border-sky-500 focus:ring-sky-500"
+                    } ${disabled ? "bg-slate-50 cursor-not-allowed" : ""}`}
+                >
+                    {valueEn}
+                </textarea>
+            ) : (
+                <input
+                    type={type}
+                    id={nameEn}
+                    name={nameEn}
+                    value={valueEn}
+                    placeholder={placeholderEn}
+                    disabled={disabled}
+                    class={`block w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border transition-colors ${
+                        hasErrorEn
+                            ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                            : "border-slate-300 focus:border-sky-500 focus:ring-sky-500"
+                    } ${disabled ? "bg-slate-50 cursor-not-allowed" : ""}`}
+                />
+            )
+        }
+
+        {
+            errorEn && (
+                <p class="field-error text-sm text-red-600 mt-1">{errorEn}</p>
+            )
+        }
+    </div>
+
+    {
+        helpText && (
+            <p class="text-xs text-slate-500 mt-1 md:col-span-2">{helpText}</p>
+        )
+    }
+</div>

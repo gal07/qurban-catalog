@@ -1,0 +1,68 @@
+---
+/**
+ * FeatureItem Component
+ * Individual feature item for hero/sedekah-daging pages
+ */
+
+interface Props {
+    index: number;
+    valueId?: string;
+    valueEn?: string;
+    placeholderId?: string;
+    placeholderEn?: string;
+}
+
+const {
+    index,
+    valueId = "",
+    valueEn = "",
+    placeholderId = "Masukkan fitur...",
+    placeholderEn = "Enter feature...",
+} = Astro.props;
+---
+
+<div class="list-item" data-index={index}>
+    <div class="list-item-content">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">
+                    Fitur {index + 1} (ID)
+                </label>
+                <input
+                    type="text"
+                    name={`feature_${index}`}
+                    value={valueId}
+                    placeholder={placeholderId}
+                    class="block w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border border-slate-300 focus:border-sky-500 focus:ring-sky-500"
+                />
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">
+                    Feature {index + 1} (EN)
+                </label>
+                <input
+                    type="text"
+                    name={`feature_${index}_en`}
+                    value={valueEn}
+                    placeholder={placeholderEn}
+                    class="block w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border border-slate-300 focus:border-sky-500 focus:ring-sky-500"
+                />
+            </div>
+        </div>
+    </div>
+
+    <button type="button" class="remove-item-btn" title="Remove feature">
+        <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+        >
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+    </button>
+</div>

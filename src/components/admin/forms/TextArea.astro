@@ -1,0 +1,63 @@
+---
+interface Props {
+    name: string;
+    label: string;
+    value?: string;
+    placeholder?: string;
+    required?: boolean;
+    disabled?: boolean;
+    error?: string;
+    helpText?: string;
+    rows?: number;
+    class?: string;
+}
+
+const {
+    name,
+    label,
+    value = "",
+    placeholder = "",
+    required = false,
+    disabled = false,
+    error,
+    helpText,
+    rows = 4,
+    class: className = "",
+} = Astro.props;
+
+const textareaId = `textarea-${name}`;
+const hasError = !!error;
+---
+
+<div class={`form-field ${className}`}>
+    <label
+        for={textareaId}
+        class="block text-sm font-medium text-slate-700 mb-1"
+    >
+        {label}
+        {required && <span class="text-red-500 ml-1">*</span>}
+    </label>
+
+    <textarea
+        id={textareaId}
+        name={name}
+        rows={rows}
+        placeholder={placeholder}
+        required={required}
+        disabled={disabled}
+        class={`block w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border transition-colors ${
+            hasError
+                ? "border-red-500 focus:border-red-500 focus:ring-red-500"
+                : "border-slate-300 focus:border-sky-500 focus:ring-sky-500"
+        } ${disabled ? "bg-slate-50 cursor-not-allowed" : ""}`}
+        >{value}</textarea
+    >
+
+    {error && <p class="field-error text-sm text-red-600 mt-1">{error}</p>}
+
+    {
+        helpText && !error && (
+            <p class="text-xs text-slate-500 mt-1">{helpText}</p>
+        )
+    }
+</div>

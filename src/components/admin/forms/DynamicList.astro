@@ -1,0 +1,230 @@
+---
+/**
+ * DynamicList Component
+ * Manages dynamic arrays of items with add/remove functionality
+ * Used for features lists, social links, steps, etc.
+ */
+
+interface Props {
+    title?: string;
+    description?: string;
+    addButtonText?: string;
+    emptyMessage?: string;
+    class?: string;
+}
+
+const {
+    title,
+    description,
+    addButtonText = "Add Item",
+    emptyMessage = "No items yet. Click the button above to add one.",
+    class: className = "",
+} = Astro.props;
+---
+
+<div class={`dynamic-list ${className}`}>
+    {
+        (title || description) && (
+            <div class="list-header mb-4">
+                {title && (
+                    <h3 class="text-lg font-semibold text-slate-900">
+                        {title}
+                    </h3>
+                )}
+                {description && (
+                    <p class="text-sm text-slate-600 mt-1">{description}</p>
+                )}
+            </div>
+        )
+    }
+
+    <div class="list-actions mb-4">
+        <button
+            type="button"
+            class="add-item-btn inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+        >
+            <svg
+                class="w-5 h-5 mr-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 4v16m8-8H4"></path>
+            </svg>
+            {addButtonText}
+        </button>
+    </div>
+
+    <div class="list-items space-y-4">
+        <!-- Items will be dynamically inserted here -->
+        <slot name="items" />
+    </div>
+
+    <div class="empty-state hidden text-center py-8 text-slate-500">
+        <svg
+            class="w-16 h-16 mx-auto mb-4 text-slate-300"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+        >
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+            ></path>
+        </svg>
+        <p>{emptyMessage}</p>
+    </div>
+</div>
+
+<style is:global>
+    .list-item {
+        background-color: white;
+        border: 1px solid rgb(226 232 240);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        position: relative;
+    }
+
+    .list-item-content {
+        padding-right: 3rem;
+    }
+
+    .remove-item-btn {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.5rem;
+        color: rgb(220 38 38);
+        border-radius: 0.5rem;
+        transition-property:
+            color, background-color, border-color, text-decoration-color, fill,
+            stroke;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 150ms;
+    }
+
+    .remove-item-btn:hover {
+        background-color: rgb(254 242 242);
+    }
+</style>
+
+<script>
+    /**
+     * DynamicList Helper Class
+     * Provides methods for managing dynamic list items
+     */
+    export class DynamicListManager {
+        private container: HTMLElement;
+        private itemsContainer: HTMLElement;
+        private addButton: HTMLButtonElement;
+        private emptyState: HTMLElement;
+        private items: any[] = [];
+        private renderItemCallback: (item: any, index: number) => string;
+        private onAddCallback?: () => any;
+        private onRemoveCallback?: (index: number) => void;
+        private onChangeCallback?: (items: any[]) => void;
+
+        constructor(config: {
+            containerId: string;
+            renderItem: (item: any, index: number) => string;
+            onAdd?: () => any;
+            onRemove?: (index: number) => void;
+            onChange?: (items: any[]) => void;
+        }) {
+            const container = document.querySelector(
+                `#${config.containerId} .dynamic-list`,
+            );
+            if (!container)
+                throw new Error(`Container #${config.containerId} not found`);
+
+            this.container = container as HTMLElement;
+            this.itemsContainer = this.container.querySelector(
+                ".list-items",
+            ) as HTMLElement;
+            this.addButton = this.container.querySelector(
+                ".add-item-btn",
+            ) as HTMLButtonElement;
+            this.emptyState = this.container.querySelector(
+                ".empty-state",
+            ) as HTMLElement;
+
+            this.renderItemCallback = config.renderItem;
+            this.onAddCallback = config.onAdd;
+            this.onRemoveCallback = config.onRemove;
+            this.onChangeCallback = config.onChange;
+
+            this.setupEventListeners();
+        }
+
+        private setupEventListeners() {
+            this.addButton.addEventListener("click", () => this.addItem());
+        }
+
+        public setItems(items: any[]) {
+            this.items = items;
+            this.render();
+        }
+
+        public getItems(): any[] {
+            return this.items;
+        }
+
+        public addItem(item?: any) {
+            const newItem =
+                item || (this.onAddCallback ? this.onAddCallback() : {});
+            this.items.push(newItem);
+            this.render();
+            this.triggerChange();
+        }
+
+        public removeItem(index: number) {
+            if (this.onRemoveCallback) {
+                this.onRemoveCallback(index);
+            }
+            this.items.splice(index, 1);
+            this.render();
+            this.triggerChange();
+        }
+
+        public updateItem(index: number, item: any) {
+            this.items[index] = item;
+            this.triggerChange();
+        }
+
+        private render() {
+            if (this.items.length === 0) {
+                this.itemsContainer.innerHTML = "";
+                this.emptyState.classList.remove("hidden");
+            } else {
+                this.emptyState.classList.add("hidden");
+                this.itemsContainer.innerHTML = this.items
+                    .map((item, index) => this.renderItemCallback(item, index))
+                    .join("");
+
+                // Attach remove button listeners
+                this.itemsContainer
+                    .querySelectorAll(".remove-item-btn")
+                    .forEach((btn, index) => {
+                        btn.addEventListener("click", () =>
+                            this.removeItem(index),
+                        );
+                    });
+            }
+        }
+
+        private triggerChange() {
+            if (this.onChangeCallback) {
+                this.onChangeCallback(this.items);
+            }
+        }
+    }
+
+    // Make DynamicListManager globally available
+    (window as any).DynamicListManager = DynamicListManager;
+</script>

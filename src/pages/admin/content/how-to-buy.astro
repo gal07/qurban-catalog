@@ -1,76 +1,50 @@
 ---
 import AdminLayout from "../../../layouts/AdminLayout.astro";
+import PageHeader from "../../../components/admin/layout/PageHeader.astro";
+import FormCard from "../../../components/admin/forms/FormCard.astro";
+import LocalizedInput from "../../../components/admin/forms/LocalizedInput.astro";
+import SaveButton from "../../../components/admin/forms/SaveButton.astro";
+import ActionBar from "../../../components/admin/layout/ActionBar.astro";
+import DynamicList from "../../../components/admin/forms/DynamicList.astro";
 ---
 
 <AdminLayout title="Cara Pemesanan">
-    <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-        <h1 class="text-2xl font-bold text-gray-800 mb-4">
-            Manage Cara Pemesanan
-        </h1>
-        <p class="text-gray-600 mb-6">
-            Edit subtitle and manage steps for the "How To Buy" section.
-        </p>
+    <PageHeader
+        title="Cara Pemesanan"
+        description="Edit subtitle and manage steps for the 'How To Buy' section"
+        icon="📋"
+    />
 
-        <form id="how-to-buy-form" class="space-y-6 max-w-2xl">
-            <!-- Subtitle -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <label
-                        for="subtitle"
-                        class="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                        Subtitle (ID)
-                    </label>
-                    <textarea
-                        id="subtitle"
-                        name="subtitle"
-                        rows="2"
-                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                        placeholder="Proses mudah dan transparan..."></textarea>
-                </div>
-                <div>
-                    <label
-                        for="subtitle_en"
-                        class="block text-sm font-medium text-gray-700 mb-1"
-                    >
-                        Subtitle (EN)
-                    </label>
-                    <textarea
-                        id="subtitle_en"
-                        name="subtitle_en"
-                        rows="2"
-                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                        placeholder="Easy and transparent process..."
-                    ></textarea>
-                </div>
-            </div>
+    <form id="how-to-buy-form">
+        <FormCard title="Subtitle" description="Section subtitle text">
+            <LocalizedInput
+                name="subtitle"
+                labelId="Subtitle (ID)"
+                labelEn="Subtitle (EN)"
+                type="textarea"
+                placeholderId="Proses mudah dan transparan..."
+                placeholderEn="Easy and transparent process..."
+                rows={2}
+            />
+        </FormCard>
 
-            <div>
-                <div class="flex justify-between items-center mb-4">
-                    <label class="block text-sm font-medium text-gray-700"
-                        >Steps</label
-                    >
-                    <button
-                        type="button"
-                        id="add-step-btn"
-                        class="px-3 py-1 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors"
-                    >
-                        + Add Step
-                    </button>
-                </div>
-                <div id="steps-container" class="space-y-4"></div>
+        <FormCard
+            title="Steps"
+            description="Manage ordering steps"
+            class="mt-6"
+        >
+            <div id="steps-list-container">
+                <DynamicList
+                    addButtonText="+ Add Step"
+                    emptyMessage="No steps yet. Click the button above to add one."
+                />
             </div>
+        </FormCard>
 
-            <div class="pt-4 border-t">
-                <button
-                    type="submit"
-                    class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-                >
-                    Simpan Perubahan
-                </button>
-            </div>
-        </form>
-    </div>
+        <ActionBar align="right" class="mt-6">
+            <SaveButton />
+        </ActionBar>
+    </form>
 </AdminLayout>
 
 <script>
@@ -78,223 +52,235 @@ import AdminLayout from "../../../layouts/AdminLayout.astro";
     import { doc, getDoc, setDoc } from "firebase/firestore";
     import { showToast } from "../../../lib/toast";
 
-    document.addEventListener("astro:page-load", () => {
+    interface Step {
+        title: string;
+        title_en: string;
+        description: string;
+        description_en: string;
+    }
+
+    document.addEventListener("astro:page-load", async () => {
         const form = document.getElementById(
             "how-to-buy-form",
         ) as HTMLFormElement;
         if (!form) return;
 
-        const subtitleInput = document.getElementById(
-            "subtitle",
-        ) as HTMLTextAreaElement;
-        const subtitleEnInput = document.getElementById(
-            "subtitle_en",
-        ) as HTMLTextAreaElement;
-        const stepsContainer = document.getElementById("steps-container");
-        const addStepBtn = document.getElementById("add-step-btn");
+        const container = document.querySelector(
+            "#steps-list-container .list-items",
+        ) as HTMLElement;
+        const addButton = document.querySelector(
+            "#steps-list-container .add-item-btn",
+        ) as HTMLButtonElement;
+        const emptyState = document.querySelector(
+            "#steps-list-container .empty-state",
+        ) as HTMLElement;
 
-        interface Step {
-            title: string;
-            title_en: string;
-            description: string;
-            description_en: string;
-        }
+        if (!container || !addButton || !emptyState) return;
 
         let steps: Step[] = [];
 
-        // Load data
-        async function loadData() {
-            try {
-                const docRef = doc(db, "content", "how_to");
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    if (subtitleInput)
-                        subtitleInput.value = data.subtitle || "";
-                    if (subtitleEnInput)
-                        subtitleEnInput.value = data.subtitle_en || "";
-
-                    // Migration logic
-                    const rawSteps = data.steps || [];
-                    if (rawSteps.length > 0) {
-                        // Check if first item has title_en, if not, it's legacy
-                        if (rawSteps[0].title_en === undefined) {
-                            steps = rawSteps.map((s: any) => ({
-                                title: s.title || "",
-                                title_en: "",
-                                description: s.description || "",
-                                description_en: "",
-                            }));
-                        } else {
-                            steps = rawSteps;
-                        }
-                    } else {
-                        steps = [];
-                    }
-                }
-
-                renderSteps();
-            } catch (error) {
-                console.error("Error loading data:", error);
-                showToast("Gagal memuat data. Silakan coba lagi.", "error");
-            }
-        }
-
         function renderSteps() {
-            if (!stepsContainer) return;
-            stepsContainer.innerHTML = "";
+            if (steps.length === 0) {
+                container.innerHTML = "";
+                emptyState.classList.remove("hidden");
+            } else {
+                emptyState.classList.add("hidden");
+                container.innerHTML = steps
+                    .map((item, index) => {
+                        return `
+                            <div class="list-item" data-index="${index}">
+                                <div class="list-item-content">
+                                    <div class="space-y-4">
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block text-sm font-medium text-slate-700 mb-1">
+                                                    Langkah ${index + 1} - Judul (ID)
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    name="step_title_${index}"
+                                                    value="${item.title || ""}"
+                                                    placeholder="Pilih Hewan Qurban"
+                                                    class="block w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border border-slate-300 focus:border-sky-500 focus:ring-sky-500"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-slate-700 mb-1">
+                                                    Step ${index + 1} - Title (EN)
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    name="step_title_${index}_en"
+                                                    value="${item.title_en || ""}"
+                                                    placeholder="Choose Qurban Animal"
+                                                    class="block w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border border-slate-300 focus:border-sky-500 focus:ring-sky-500"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                                <label class="block text-sm font-medium text-slate-700 mb-1">
+                                                    Deskripsi (ID)
+                                                </label>
+                                                <textarea
+                                                    name="step_description_${index}"
+                                                    rows="3"
+                                                    placeholder="Pilih hewan qurban sesuai kebutuhan..."
+                                                    class="block w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border border-slate-300 focus:border-sky-500 focus:ring-sky-500"
+                                                >${item.description || ""}</textarea>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-slate-700 mb-1">
+                                                    Description (EN)
+                                                </label>
+                                                <textarea
+                                                    name="step_description_${index}_en"
+                                                    rows="3"
+                                                    placeholder="Choose the qurban animal according to your needs..."
+                                                    class="block w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border border-slate-300 focus:border-sky-500 focus:ring-sky-500"
+                                                >${item.description_en || ""}</textarea>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <button
+                                    type="button"
+                                    class="remove-item-btn"
+                                    data-index="${index}"
+                                    title="Remove step"
+                                >
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        `;
+                    })
+                    .join("");
 
-            steps.forEach((step, index) => {
-                const stepDiv = document.createElement("div");
-                stepDiv.className =
-                    "p-4 bg-gray-50 rounded-lg border border-gray-200";
-                stepDiv.innerHTML = `
-                <div class="flex justify-between items-start mb-3">
-                    <span class="text-sm font-semibold text-gray-700">Step ${index + 1}</span>
-                    <button 
-                        type="button" 
-                        data-index="${index}"
-                        class="remove-step-btn text-red-600 hover:text-red-800 text-sm font-medium"
-                    >
-                        Remove
-                    </button>
-                </div>
-                <div class="space-y-4">
-                    <!-- Title -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Title (ID)</label>
-                            <input 
-                                type="text" 
-                                data-index="${index}" 
-                                data-field="title"
-                                value="${step.title}"
-                                placeholder="e.g., Pilih Hewan"
-                                class="step-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                            />
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Title (EN)</label>
-                            <input 
-                                type="text" 
-                                data-index="${index}" 
-                                data-field="title_en"
-                                value="${step.title_en}"
-                                placeholder="e.g., Choose Animal"
-                                class="step-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                            />
-                        </div>
-                    </div>
-
-                    <!-- Description -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Description (ID)</label>
-                            <textarea 
-                                data-index="${index}" 
-                                data-field="description"
-                                rows="2"
-                                placeholder="Describe this step..."
-                                class="step-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                            >${step.description}</textarea>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Description (EN)</label>
-                            <textarea 
-                                data-index="${index}" 
-                                data-field="description_en"
-                                rows="2"
-                                placeholder="Describe this step..."
-                                class="step-input w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm border p-2"
-                            >${step.description_en}</textarea>
-                        </div>
-                    </div>
-                </div>
-            `;
-                stepsContainer.appendChild(stepDiv);
-            });
-
-            // Attach event listeners
-            stepsContainer.querySelectorAll(".step-input").forEach((el) => {
-                el.addEventListener("change", handleStepChange);
-            });
-
-            stepsContainer
-                .querySelectorAll(".remove-step-btn")
-                .forEach((btn) => {
-                    btn.addEventListener("click", handleRemoveStep);
-                });
-        }
-
-        function handleStepChange(e: Event) {
-            const target = e.target as HTMLInputElement | HTMLTextAreaElement;
-            const index = parseInt(target.dataset.index || "0");
-            const field = target.dataset.field as
-                | "title"
-                | "title_en"
-                | "description"
-                | "description_en";
-
-            if (steps[index]) {
-                steps[index][field] = target.value;
+                // Attach remove button listeners
+                container
+                    .querySelectorAll(".remove-item-btn")
+                    .forEach((btn) => {
+                        btn.addEventListener("click", (e) => {
+                            const index = parseInt(
+                                (e.currentTarget as HTMLElement).dataset
+                                    .index || "0",
+                            );
+                            steps.splice(index, 1);
+                            renderSteps();
+                        });
+                    });
             }
         }
 
-        function handleRemoveStep(e: Event) {
-            const target = e.target as HTMLButtonElement;
-            const index = parseInt(target.dataset.index || "0");
-            steps.splice(index, 1);
+        // Add button handler
+        addButton.addEventListener("click", () => {
+            steps.push({
+                title: "",
+                title_en: "",
+                description: "",
+                description_en: "",
+            });
             renderSteps();
-        }
+        });
 
-        if (addStepBtn) {
-            addStepBtn.addEventListener("click", () => {
-                steps.push({
-                    title: "",
-                    title_en: "",
-                    description: "",
-                    description_en: "",
-                });
+        // Load data from Firestore
+        try {
+            const docRef = doc(db, "content", "how_to_buy");
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+
+                // Set subtitle fields
+                const subtitleInput = form.querySelector(
+                    '[name="subtitle"]',
+                ) as HTMLTextAreaElement;
+                const subtitleEnInput = form.querySelector(
+                    '[name="subtitle_en"]',
+                ) as HTMLTextAreaElement;
+                if (subtitleInput) subtitleInput.value = data.subtitle || "";
+                if (subtitleEnInput)
+                    subtitleEnInput.value = data.subtitle_en || "";
+
+                // Set steps
+                steps = data.steps || [];
                 renderSteps();
-            });
+            }
+        } catch (error) {
+            console.error("Error loading data:", error);
+            showToast("Gagal memuat data. Silakan coba lagi.", "error");
         }
 
-        if (form) {
-            form.addEventListener("submit", async (e) => {
-                e.preventDefault();
+        // Handle form submit
+        form.addEventListener("submit", async (e) => {
+            e.preventDefault();
 
-                const submitBtn = form.querySelector('button[type="submit"]');
+            const submitBtn = form.querySelector(
+                'button[type="submit"]',
+            ) as HTMLButtonElement;
+            if (submitBtn) {
+                submitBtn.textContent = "Menyimpan...";
+                submitBtn.disabled = true;
+            }
+
+            try {
+                // Collect subtitle data
+                const subtitleInput = form.querySelector(
+                    '[name="subtitle"]',
+                ) as HTMLTextAreaElement;
+                const subtitleEnInput = form.querySelector(
+                    '[name="subtitle_en"]',
+                ) as HTMLTextAreaElement;
+
+                // Collect steps data
+                const stepsData = steps
+                    .map((_, index) => {
+                        const titleInput = form.querySelector(
+                            `[name="step_title_${index}"]`,
+                        ) as HTMLInputElement;
+                        const titleEnInput = form.querySelector(
+                            `[name="step_title_${index}_en"]`,
+                        ) as HTMLInputElement;
+                        const descInput = form.querySelector(
+                            `[name="step_description_${index}"]`,
+                        ) as HTMLTextAreaElement;
+                        const descEnInput = form.querySelector(
+                            `[name="step_description_${index}_en"]`,
+                        ) as HTMLTextAreaElement;
+
+                        return {
+                            title: titleInput?.value || "",
+                            title_en: titleEnInput?.value || "",
+                            description: descInput?.value || "",
+                            description_en: descEnInput?.value || "",
+                        };
+                    })
+                    .filter((step) => step.title && step.description);
+
+                const data = {
+                    subtitle: subtitleInput?.value || "",
+                    subtitle_en: subtitleEnInput?.value || "",
+                    steps: stepsData,
+                    updatedAt: new Date().toISOString(),
+                };
+
+                await setDoc(doc(db, "content", "how_to_buy"), data);
+                showToast("Data berhasil disimpan!", "success");
+            } catch (error) {
+                console.error("Error saving data:", error);
+                showToast(
+                    "Gagal menyimpan data: " + (error as Error).message,
+                    "error",
+                );
+            } finally {
                 if (submitBtn) {
-                    submitBtn.textContent = "Menyimpan...";
-                    (submitBtn as HTMLButtonElement).disabled = true;
+                    submitBtn.textContent = "Simpan Perubahan";
+                    submitBtn.disabled = false;
                 }
-
-                try {
-                    const data = {
-                        subtitle: subtitleInput.value,
-                        subtitle_en: subtitleEnInput.value,
-                        steps: steps,
-                        updatedAt: new Date().toISOString(),
-                    };
-
-                    await setDoc(doc(db, "content", "how_to"), data);
-                    showToast("Data berhasil disimpan!", "success");
-                } catch (error) {
-                    console.error("Error saving data:", error);
-                    showToast(
-                        "Gagal menyimpan data: " + (error as Error).message,
-                        "error",
-                    );
-                } finally {
-                    if (submitBtn) {
-                        submitBtn.textContent = "Simpan Perubahan";
-                        (submitBtn as HTMLButtonElement).disabled = false;
-                    }
-                }
-            });
-        }
-
-        loadData();
+            }
+        });
     });
 </script>
