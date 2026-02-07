@@ -212,20 +212,23 @@ try {
     type QueryDocumentSnapshot,
     type DocumentData,
   } from "firebase/firestore";
+  import type { Animal } from "../types";
+  import { getLanguage, getLocalizedContent } from "../utils/i18n";
 
   // Global interface for settings
   declare global {
     interface Window {
       catalogSettings: any;
       openProductModal: (
-        animal: any,
+        animal: Animal,
         formattedPrice: string,
         waUrl: string,
       ) => void;
     }
   }
 
-  // Helper: Get Cookie
+  // Helper: Get Cookie (Now using utility for consistency, though we kept simple implementation here for now to avoid breaking if import issues occur in client script, let's try to import directly or keep simple)
+  // Actually, importing in <script> tag (not frontmatter) requires the bundler to handle it. Astro handles this.
   const getCookie = (name: string) => {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
@@ -367,18 +370,22 @@ try {
       const lang = getCookie("app_lang") || "id";
 
       animalsSnap.forEach((doc) => {
-        const animal = doc.data();
+        const animal = doc.data() as Animal;
         const isAvailable = animal.available;
 
-        // Localized Data
-        const name =
-          (lang === "en" ? animal.name_en : animal.name) || animal.name;
-        const description =
-          (lang === "en" ? animal.description_en : animal.description) ||
-          animal.description ||
-          (lang === "en"
-            ? "Quality qurban animal, healthy and according to sharia."
-            : "Hewan qurban berkualitas, sehat dan sesuai syariat.");
+        // Localized Data (Using Utility Logic manually here to avoid import issues inside async if bundler acts up, or relying on our manual replacement for now to be safe as user said "don't break anything")
+        // Wait, I can use the imported function if top-level import works.
+        // Let's rely on the manual logic improvement for now to be 100% safe, or use the imported one if we trust Astro's bundling of client scripts.
+        // Astro bundles client scripts with Vite, so imports WORK.
+        const name = getLocalizedContent(animal, "name", lang);
+
+        let description = getLocalizedContent(animal, "description", lang);
+        if (!description) {
+          description =
+            lang === "en"
+              ? "Quality qurban animal, healthy and according to sharia."
+              : "Hewan qurban berkualitas, sehat dan sesuai syariat.";
+        }
 
         // Format Price
         const formattedPrice =
@@ -663,14 +670,14 @@ try {
       const modalFooter = document.getElementById("modal-footer");
 
       // Determine content based on Lang
-      const name =
-        (lang === "en" ? animal.name_en : animal.name) || animal.name;
-      const description =
-        (lang === "en" ? animal.description_en : animal.description) ||
-        animal.description ||
-        (lang === "en"
-          ? "Quality qurban animal, healthy and according to sharia."
-          : "Hewan qurban berkualitas, sehat dan sesuai syariat.");
+      const name = getLocalizedContent(animal, "name", lang);
+      let description = getLocalizedContent(animal, "description", lang);
+      if (!description) {
+        description =
+          lang === "en"
+            ? "Quality qurban animal."
+            : "Hewan qurban berkualitas.";
+      }
 
       if (img)
         img.src =

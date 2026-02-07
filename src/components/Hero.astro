@@ -1,6 +1,7 @@
 ---
 import { db } from "../lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { getLocalizedContent } from "../utils/i18n";
 
 const lang = Astro.cookies.get("app_lang")?.value || "id";
 
@@ -21,12 +22,7 @@ try {
 
     // Helper to get localized value with fallbacks
     // Priority: {key}_{lang} -> {key}_id -> {key} (legacy)
-    const getVal = (key: string) => {
-      if (lang === "en") {
-        return data[`${key}_en`] || data[`${key}_id`] || data[key];
-      }
-      return data[`${key}_id`] || data[key];
-    };
+    const getVal = (key: string) => getLocalizedContent(data, key, lang);
 
     heroData.badge = getVal("badge") || heroData.badge;
     heroData.title = getVal("title") || heroData.title;
