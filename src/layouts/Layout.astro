@@ -22,7 +22,6 @@ const canonicalURL = new URL(
 	Astro.site || Astro.url.origin,
 );
 
-import { ViewTransitions } from "astro:transitions";
 
 // Server-Side Region Detection (Vercel)
 const country = Astro.request.headers.get("x-vercel-ip-country") || "ID"; // Default to ID if local/missing
@@ -33,7 +32,7 @@ const shouldAutoTranslate = country !== "ID";
 <html lang="id" class="scroll-smooth">
 	<head>
 		<meta charset="UTF-8" />
-		<ViewTransitions />
+		<!-- transitions built-in via Astro 7 -->
 		<meta name="viewport" content="width=device-width" />
 
 		<!-- SEO -->

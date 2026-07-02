@@ -1,0 +1,1 @@
+import{r as e,t}from"./content.p26xsFIM.js";document.addEventListener(`astro:page-load`,async()=>{await e({formId:`contact-form-v2`,collectionName:`content`,documentId:`hubungi_kami`,validationSchema:t})});

@@ -1,0 +1,128 @@
+{
+	"version": 3,
+	"routes": [
+		{
+			"handle": "filesystem"
+		},
+		{
+			"src": "^/_astro/(.*)$",
+			"headers": {
+				"cache-control": "public, max-age=31536000, immutable"
+			},
+			"continue": true
+		},
+		{
+			"src": "^/_server-islands/([^/]+?)/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/_image/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/admin/animals/add/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/admin/animals/edit/([^/]+?)/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/admin/animals/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/admin/content/contact/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/admin/content/contact-old/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/admin/content/contact-v2/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/admin/content/footer/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/admin/content/footer-old/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/admin/content/hero/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/admin/content/hero-old/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/admin/content/how-to-buy/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/admin/content/how-to-buy-old/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/admin/content/sedekah-daging/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/admin/content/sedekah-daging-old/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/admin/content/social/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/admin/content/social-old/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/admin/dashboard/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/admin/gallery/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/admin/login/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/admin/seo/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/admin/settings/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/delete-image/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/api/upload/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/404/?$",
+			"dest": "_render"
+		},
+		{
+			"src": "^/.*$",
+			"dest": "_render",
+			"status": 404
+		}
+	]
+}

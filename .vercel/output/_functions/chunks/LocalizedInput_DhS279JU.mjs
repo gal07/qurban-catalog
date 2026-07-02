@@ -1,0 +1,20 @@
+import { C as createAstro, _ as addAttribute, d as renderTemplate, h as maybeRenderHead, w as createComponent } from "./server_BeNfQ4JR.mjs";
+import "./compiler_y-Drgp0Q.mjs";
+//#region src/components/admin/forms/LocalizedInput.astro
+createAstro("https://astro.build");
+var $$LocalizedInput = createComponent(($$result, $$props, $$slots) => {
+	const Astro = $$result.createAstro($$props, $$slots);
+	Astro.self = $$LocalizedInput;
+	const { name, labelId, labelEn, type = "text", valueId = "", valueEn = "", placeholderId = "", placeholderEn = "", required = false, disabled = false, errorId, errorEn, helpText, rows = 4, class: className = "" } = Astro.props;
+	const nameId = `${name}`;
+	const nameEn = `${name}_en`;
+	const hasErrorId = !!errorId;
+	const hasErrorEn = !!errorEn;
+	return renderTemplate`${maybeRenderHead($$result)}<div${addAttribute(`localized-input grid grid-cols-1 md:grid-cols-2 gap-4 ${className}`, "class")}><!-- Indonesian Field --><div class="form-field"><label${addAttribute(nameId, "for")} class="block text-sm font-medium text-slate-700 mb-1">${labelId}${required && renderTemplate`<span class="text-red-500 ml-1">*</span>`}</label>${type === "textarea" ? renderTemplate`<textarea${addAttribute(nameId, "id")}${addAttribute(nameId, "name")}${addAttribute(rows, "rows")}${addAttribute(placeholderId, "placeholder")}${addAttribute(required, "required")}${addAttribute(disabled, "disabled")}${addAttribute(`block w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border transition-colors ${hasErrorId ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-slate-300 focus:border-sky-500 focus:ring-sky-500"} ${disabled ? "bg-slate-50 cursor-not-allowed" : ""}`, "class")}>
+                    ${valueId}
+                </textarea>` : renderTemplate`<input${addAttribute(type, "type")}${addAttribute(nameId, "id")}${addAttribute(nameId, "name")}${addAttribute(valueId, "value")}${addAttribute(placeholderId, "placeholder")}${addAttribute(required, "required")}${addAttribute(disabled, "disabled")}${addAttribute(`block w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border transition-colors ${hasErrorId ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-slate-300 focus:border-sky-500 focus:ring-sky-500"} ${disabled ? "bg-slate-50 cursor-not-allowed" : ""}`, "class")}>`}${errorId && renderTemplate`<p class="field-error text-sm text-red-600 mt-1">${errorId}</p>`}</div><!-- English Field --><div class="form-field"><label${addAttribute(nameEn, "for")} class="block text-sm font-medium text-slate-700 mb-1">${labelEn}</label>${type === "textarea" ? renderTemplate`<textarea${addAttribute(nameEn, "id")}${addAttribute(nameEn, "name")}${addAttribute(rows, "rows")}${addAttribute(placeholderEn, "placeholder")}${addAttribute(disabled, "disabled")}${addAttribute(`block w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border transition-colors ${hasErrorEn ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-slate-300 focus:border-sky-500 focus:ring-sky-500"} ${disabled ? "bg-slate-50 cursor-not-allowed" : ""}`, "class")}>
+                    ${valueEn}
+                </textarea>` : renderTemplate`<input${addAttribute(type, "type")}${addAttribute(nameEn, "id")}${addAttribute(nameEn, "name")}${addAttribute(valueEn, "value")}${addAttribute(placeholderEn, "placeholder")}${addAttribute(disabled, "disabled")}${addAttribute(`block w-full rounded-lg shadow-sm sm:text-sm px-4 py-2 border transition-colors ${hasErrorEn ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-slate-300 focus:border-sky-500 focus:ring-sky-500"} ${disabled ? "bg-slate-50 cursor-not-allowed" : ""}`, "class")}>`}${errorEn && renderTemplate`<p class="field-error text-sm text-red-600 mt-1">${errorEn}</p>`}</div>${helpText && renderTemplate`<p class="text-xs text-slate-500 mt-1 md:col-span-2">${helpText}</p>`}</div>`;
+}, "/tmp/qc-fix/src/components/admin/forms/LocalizedInput.astro", void 0);
+//#endregion
+export { $$LocalizedInput as t };
